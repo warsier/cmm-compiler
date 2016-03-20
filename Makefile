@@ -10,8 +10,9 @@ test: all $(TEST_FILE_LIST)
 		./scanner $$TEST_FILE | tee -a log.txt;\
 	done
 clean:
-	rm -f scanner log.txt
+	@rm -f scanner log.txt
 commit:
-	make clean
-	@read -p "Input commit message: " msg
-	git commit -m "$$msg"
+	@make clean
+	@read -p "Input commit message: " NAME; \
+	git commit -m $$NAME;
+
