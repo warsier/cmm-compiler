@@ -1,8 +1,8 @@
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
 all:
-	flex lexical.l
-	gcc lex.yy.c -lfl -o scanner
-	git add -A --ignore-errors
+	@flex lexical.l
+	@gcc lex.yy.c -lfl -o scanner
+	@git add -A --ignore-errors
 test: all $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
@@ -14,5 +14,5 @@ clean:
 commit:
 	@make clean
 	@read -p "Input commit message: " NAME; \
-	echo "$$NAME";
-	#git commit -m $$REPLY
+	git commit -m $$NAME;
+
