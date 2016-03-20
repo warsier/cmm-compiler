@@ -13,6 +13,6 @@ clean:
 	@rm -f scanner log.txt
 commit:
 	@make clean
-	@read -p "Input commit message: " NAME; \
+	@ IFS='' read -p "Input commit message: " NAME; \
 	git commit -m $$NAME;
 
