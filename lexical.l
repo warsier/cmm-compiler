@@ -1,5 +1,6 @@
 %option yylineno
 /* Tokens */
+TAB "	"
 SPACE " "
 INT 0|[1-9][0-9]*
 FLOAT {INT}*\.[0-9]+
@@ -30,7 +31,8 @@ ELSE else
 WHILE while
 
 %%
-{SPACE} {}
+{TAB} {;}
+{SPACE} {;}
 {INT} {printf("INT\n");}
 {FLOAT} {printf("FLOAT\n");}
 {ID} {printf("ID\n");}
