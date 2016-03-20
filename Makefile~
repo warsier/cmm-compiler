@@ -13,5 +13,5 @@ clean:
 	rm -f scanner log.txt
 commit:
 	make clean
-	@echo "Input commit message: "
-	
+	@read -p "Input commit message: " -a msg
+	git commit -m "$$msg"
