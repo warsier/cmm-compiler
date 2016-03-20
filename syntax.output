@@ -1,0 +1,225 @@
+Nonterminals useless in grammar
+
+   Program
+   ExtDefList
+   ExtDef
+   ExtDecList
+   Specifier
+   StructSpecifier
+   OptTag
+   Tag
+   VarDec
+   FunDec
+   VarList
+   ParamDec
+   CompSt
+   StmtList
+   Stmt
+   DefList
+   Def
+   DecList
+   Dec
+   Exp
+   Args
+
+
+Terminals unused in grammar
+
+   TAB
+   SPACE
+   ENTER
+   STRUCT
+   RETURN
+   IF
+   ELSE
+   WHILE
+   ID
+   SEMI
+   COMMA
+   ASSIGNOP
+   RELOP
+   PLUS
+   MINUS
+   STAR
+   DIV
+   AND
+   OR
+   DOT
+   NOT
+   LP
+   RP
+   LB
+   RB
+   LC
+   RC
+
+
+Rules useless in grammar
+
+    3 Program: ExtDefList
+
+    4 ExtDefList: ExtDef ExtDefList
+    5           | %empty
+
+    6 ExtDef: Specifier ExtDecList SEMI
+    7       | Specifier SEMI
+    8       | Specifier FunDec CompSt
+
+    9 ExtDecList: VarDec
+   10           | VarDec COMMA ExtDecList
+
+   11 Specifier: TYPE
+   12          | StructSpecifier
+
+   13 StructSpecifier: STRUCT OptTag LC DefList RC
+   14                | STRUCT Tag
+
+   15 OptTag: ID
+   16       | %empty
+
+   17 Tag: ID
+
+   18 VarDec: ID
+   19       | VarDec LB INT RB
+
+   20 FunDec: ID LP VarList RP
+   21       | ID LP RP
+
+   22 VarList: ParamDec COMMA VarList
+   23        | ParamDec
+
+   24 ParamDec: Specifier VarDec
+
+   25 CompSt: LC DefList StmtList RC
+
+   26 StmtList: Stmt StmtList
+   27         | %empty
+
+   28 Stmt: Exp SEMI
+   29     | CompSt
+   30     | RETURN Exp SEMI
+   31     | IF LP Exp RP Stmt
+   32     | IF LP Exp RP Stmt ELSE Stmt
+   33     | WHILE LP Exp RP Stmt
+
+   34 DefList: Def DefList
+   35        | %empty
+
+   36 Def: Specifier DecList SEMI
+
+   37 DecList: Dec
+   38        | Dec COMMA DecList
+
+   39 Dec: VarDec
+   40    | VarDec ASSIGNOP Exp
+
+   41 Exp: Exp ASSIGNOP Exp
+   42    | Exp AND Exp
+   43    | Exp OR Exp
+   44    | Exp RELOP Exp
+   45    | Exp PLUS Exp
+   46    | Exp MINUS Exp
+   47    | Exp STAR Exp
+   48    | Exp DIV Exp
+   49    | LP Exp RP
+   50    | MINUS Exp
+   51    | NOT Exp
+   52    | ID LP Args RP
+   53    | ID LP RP
+   54    | Exp LB Exp RB
+   55    | Exp DOT ID
+   56    | ID
+   57    | INT
+   58    | FLOAT
+
+   59 Args: Exp COMMA Args
+   60     | Exp
+
+
+Grammar
+
+    0 $accept: TYPE $end
+
+    1 TYPE: INT
+    2     | FLOAT
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+TAB (258)
+SPACE (259)
+ENTER (260)
+STRUCT (261)
+RETURN (262)
+IF (263)
+ELSE (264)
+WHILE (265)
+INT (266) 1
+FLOAT (267) 2
+ID (268)
+SEMI (269)
+COMMA (270)
+ASSIGNOP (271)
+RELOP (272)
+PLUS (273)
+MINUS (274)
+STAR (275)
+DIV (276)
+AND (277)
+OR (278)
+DOT (279)
+NOT (280)
+LP (281)
+RP (282)
+LB (283)
+RB (284)
+LC (285)
+RC (286)
+
+
+Nonterminals, with rules where they appear
+
+$accept (32)
+    on left: 0
+TYPE (33)
+    on left: 1 2, on right: 0
+
+
+State 0
+
+    0 $accept: . TYPE $end
+
+    INT    shift, and go to state 1
+    FLOAT  shift, and go to state 2
+
+    TYPE  go to state 3
+
+
+State 1
+
+    1 TYPE: INT .
+
+    $default  reduce using rule 1 (TYPE)
+
+
+State 2
+
+    2 TYPE: FLOAT .
+
+    $default  reduce using rule 2 (TYPE)
+
+
+State 3
+
+    0 $accept: TYPE . $end
+
+    $end  shift, and go to state 4
+
+
+State 4
+
+    0 $accept: TYPE $end .
+
+    $default  accept

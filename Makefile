@@ -1,18 +1,35 @@
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
-all:
-	@flex lexical.l
-	@gcc lex.yy.c -lfl -o scanner
+
+bison:
+	bison -d -v syntax.y
+	flex lexical.l
+	gcc main.c syntax.tab.c -lfl -ly -o parser
 	@git add -A --ignore-errors
+	
+flex:
+	@flex lexical.l
+	@gcc main.c lex.yy.c -lfl -o scanner
+	@git add -A --ignore-errors
+	
 test: all $(TEST_FILE_LIST)
+	@rm -f log.txt
+	@for TEST_FILE in $(TEST_FILE_LIST); do \
+		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
+		./parser $$TEST_FILE | tee -a log.txt;\
+	done
+	
+testf: all $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
 		./scanner $$TEST_FILE | tee -a log.txt;\
 	done
+	
 clean:
-	@rm -f scanner log.txt
+	@rm -f scanner lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
+	
 commit:
 	@make clean
-	@ IFS='' read -p "Input commit message: " NAME; \
+	@read -p "Input commit message: " NAME; \
 	git commit -m $$NAME;
 

@@ -517,8 +517,10 @@ int yy_flex_debug = 0;
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "lexical.l"
+#line 2 "lexical.l"
+	#include "syntax.tab.h"
 /* Tokens */
-#line 522 "lex.yy.c"
+#line 524 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -705,10 +707,52 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 39 "lexical.l"
+#line 45 "lexical.l"
 
 	/* output for testing */
-#line 712 "lex.yy.c"
+	/*
+	{TAB} {printf("	");}
+	{SPACE} {printf(" ");}
+	{ENTER} {printf("\n");}
+
+	{STRUCT} {printf("STRUCT");}
+	{RETURN} {printf("RETURN");}
+	{IF} {printf("IF");}
+	{ELSE} {printf("ELSE");}
+	{WHILE} {printf("WHILE");}
+
+	{INT} {printf("INT");}
+	{FLOAT} {printf("FLOAT");}
+	{ID} {printf("ID");}
+
+	{SEMI} {printf(";");}
+	{COMMA} {printf(",");}
+	{ASSIGNOP} {printf("=");}
+	{RELOP} {printf("RELOP");}
+	
+	{PLUS} {printf("+");}
+	{MINUS} {printf("-");}
+	{STAR} {printf("*");}
+	{DIV} {printf("/");}
+	
+	{AND} {printf("&&");}
+	{OR} {printf("||");}
+	{DOT} {printf(".");}
+	{NOT} {printf("!");}
+
+	{LP} {printf("(");}
+	{RP} {printf(")");}
+	{LB} {printf("[");}
+	{RB} {printf("]");}
+	{LC} {printf("{");}
+	{RC} {printf("}");}
+
+	. { printf("\nError type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
+	*/
+
+	/* output for syntax analysis */
+	
+#line 756 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -803,198 +847,161 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 41 "lexical.l"
-{printf("	");}
+#line 89 "lexical.l"
+{;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 42 "lexical.l"
-{printf(" ");}
+#line 90 "lexical.l"
+{;}
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 43 "lexical.l"
-{printf("\n");}
+#line 91 "lexical.l"
+{;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 45 "lexical.l"
-{printf("STRUCT");}
+#line 93 "lexical.l"
+{return STRUCT;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 46 "lexical.l"
-{printf("RETURN");}
+#line 94 "lexical.l"
+{return RETURN;} 
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 47 "lexical.l"
-{printf("IF");}
+#line 95 "lexical.l"
+{return IF;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 48 "lexical.l"
-{printf("ELSE");}
+#line 96 "lexical.l"
+{return ELSE;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 49 "lexical.l"
-{printf("WHILE");}
+#line 97 "lexical.l"
+{return WHILE;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 51 "lexical.l"
-{printf("INT");}
+#line 99 "lexical.l"
+{return INT;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 52 "lexical.l"
-{printf("FLOAT");}
+#line 100 "lexical.l"
+{return FLOAT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 53 "lexical.l"
-{printf("ID");}
+#line 101 "lexical.l"
+{return ID;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 55 "lexical.l"
-{printf(";");}
+#line 102 "lexical.l"
+{return SEMI;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 56 "lexical.l"
-{printf(",");}
+#line 103 "lexical.l"
+{return COMMA;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 57 "lexical.l"
-{printf("=");}
+#line 104 "lexical.l"
+{return ASSIGNOP;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 58 "lexical.l"
-{printf("RELOP");}
+#line 105 "lexical.l"
+{return RELOP;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 59 "lexical.l"
-{printf("+");}
+#line 106 "lexical.l"
+{return PLUS;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 60 "lexical.l"
-{printf("-");}
+#line 107 "lexical.l"
+{return MINUS;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 61 "lexical.l"
-{printf("*");}
+#line 108 "lexical.l"
+{return STAR;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 62 "lexical.l"
-{printf("/");}
+#line 109 "lexical.l"
+{return DIV;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 63 "lexical.l"
-{printf("&&");}
+#line 110 "lexical.l"
+{return AND;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 64 "lexical.l"
-{printf("||");}
+#line 111 "lexical.l"
+{return OR;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 65 "lexical.l"
-{printf(".");}
+#line 112 "lexical.l"
+{return DOT;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 66 "lexical.l"
-{printf("!");}
+#line 113 "lexical.l"
+{return NOT;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 68 "lexical.l"
-{printf("(");}
+#line 114 "lexical.l"
+{return LP;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 69 "lexical.l"
-{printf(")");}
+#line 115 "lexical.l"
+{return RP;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 70 "lexical.l"
-{printf("[");}
+#line 116 "lexical.l"
+{return LB;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 71 "lexical.l"
-{printf("]");}
+#line 117 "lexical.l"
+{return RB;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 72 "lexical.l"
-{printf("{");}
+#line 118 "lexical.l"
+{return LC;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 73 "lexical.l"
-{printf("}");}
+#line 119 "lexical.l"
+{return RC;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 75 "lexical.l"
-{ printf("\nError type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
+#line 121 "lexical.l"
+{ printf("Error type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
 	YY_BREAK
-/* output for syntax analysis */
-/* 
-	{TAB} {;}
-	{SPACE} {;}
-	{ENTER} {;}
-	
-	{STRUCT} {return STRUCT;}
-	{RETURN} {return RETURN;}
-	{IF} {return IF;}
-	{ELSE} {return ELSE;}
-	{WHILE} {return WHILE;}
-	
-	{INT} {return INT;}
-	{FLOAT} {return FLOAT;}
-	{ID} {return ID;}
-	{SEMI} {return SEMI;}
-	{COMMA} {return COMMA;}
-	{ASSIGNOP} {return ASSIGNOP;}
-	{RELOP} {return RELOP;}
-	{PLUS} {return PLUS;}
-	{MINUS} {return MINUS;}
-	{STAR} {return STAR;}
-	{DIV} {return DIV;}
-	{AND} {return AND;}
-	{OR} {return OR;}
-	{DOT} {return DOT;}
-	{NOT} {return NOT;}
-	{TYPE} {return TYPE;}
-	{LP} {return LP;}
-	{RP} {return RP;}
-	{LB} {return LB;}
-	{RB} {return RB;}
-	{LC} {return LC;}
-	{RC} {return RC;}
-	
-	. { printf("Error type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
-	*/
 case 31:
 YY_RULE_SETUP
-#line 115 "lexical.l"
+#line 124 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 998 "lex.yy.c"
+#line 1005 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2004,17 +2011,8 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 115 "lexical.l"
+#line 124 "lexical.l"
 
 
-int main(int argc, char** argv) {
-	if (argc > 1) {
-		if (!(yyin = fopen(argv[1], "r"))) {
-			perror(argv[1]);
-			return 1;
-		}
-	}
-	while (yylex() != 0);
-	return 0;
-}
+
 
