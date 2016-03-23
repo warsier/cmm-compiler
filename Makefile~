@@ -30,5 +30,6 @@ clean:
 	
 commit:
 	@make clean
-	git commit -a;
+	@git add -A --ignore-errors
+	@git commit -a;
 

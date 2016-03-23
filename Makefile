@@ -31,5 +31,6 @@ clean:
 commit:
 	@make clean
 	@git add -A --ignore-errors
-	@git commit -a;
+	@git commit -a
+	@git push origin master
 
