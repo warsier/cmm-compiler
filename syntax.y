@@ -12,9 +12,6 @@
 %token LP RP LB RB LC RC
 
 %%
-TYPE : INT
-	| FLOAT
-	; 
 
 /* High-level Definitions */
 Program : ExtDefList
@@ -107,6 +104,9 @@ Args : Exp COMMA Args
 	| Exp
 	;
 
+TYPE : INT
+	| FLOAT
+	; 
 	
 %%
 #include "lex.yy.c"
