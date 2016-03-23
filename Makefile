@@ -30,6 +30,6 @@ clean:
 	
 commit:
 	@make clean
-	@read -p "Input commit message: " NAME; \
-	git commit -m $$NAME;
+	@git add -A --ignore-errors
+	@git commit -a;
 

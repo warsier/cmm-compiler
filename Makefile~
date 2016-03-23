@@ -4,6 +4,7 @@ bison:
 	bison -d -v syntax.y
 	flex lexical.l
 	gcc main.c syntax.tab.c -lfl -ly -o parser
+	@git add -A --ignore-errors
 	
 flex:
 	@flex lexical.l
@@ -29,6 +30,5 @@ clean:
 	
 commit:
 	@make clean
-	@read -p "Input commit message: " NAME; \
-	git commit -m $$NAME;
+	git commit -a;
 
