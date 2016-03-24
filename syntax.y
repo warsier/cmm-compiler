@@ -6,10 +6,16 @@
 %token TAB SPACE ENTER
 %token STRUCT RETURN IF ELSE WHILE
 %token INT FLOAT ID
-%token SEMI COMMA ASSIGNOP RELOP
-%token PLUS MINUS STAR DIV
-%token AND OR DOT NOT
-%token LP RP LB RB LC RC
+%token SEMI COMMA
+
+%left LP RP LB RB LC RC DOT
+%right NOT
+%left STAR DIV
+%left PLUS MINUS
+%left RELOP
+%left AND
+%left OR
+%right ASSIGNOP
 
 %%
 
@@ -104,6 +110,7 @@ Args : Exp COMMA Args
 	| Exp
 	;
 
+/* others */
 TYPE : INT
 	| FLOAT
 	; 

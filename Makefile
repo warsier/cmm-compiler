@@ -11,14 +11,14 @@ flex:
 	@gcc main.c lex.yy.c -lfl -o scanner
 	@git add -A --ignore-errors
 	
-test: all $(TEST_FILE_LIST)
+test: bison $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
 		./parser $$TEST_FILE | tee -a log.txt;\
 	done
 	
-testf: all $(TEST_FILE_LIST)
+testf: flex $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \

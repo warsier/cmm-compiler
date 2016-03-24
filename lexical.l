@@ -15,7 +15,7 @@ ID [_a-zA-Z][_0-9a-zA-Z]*
 SEMI ;
 COMMA ,
 ASSIGNOP =
-RELOP >|<|>=|<=|==|!=
+RELOP <|<=|>|>=|==|!=
 
 PLUS \+
 MINUS -
