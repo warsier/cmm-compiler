@@ -1,0 +1,21 @@
+
+@@@ TESTFILE: ./test/01.cmm @@@
+Error type A at line 4: Mysterious characters '~' [lexical error]
+
+@@@ TESTFILE: ./test/02.cmm @@@
+
+@@@ TESTFILE: ./test/03.cmm @@@
+
+@@@ TESTFILE: ./test/04.cmm @@@
+
+@@@ TESTFILE: ./test/05.cmm @@@
+
+@@@ TESTFILE: ./test/06.cmm @@@
+
+@@@ TESTFILE: ./test/07.cmm @@@
+
+@@@ TESTFILE: ./test/08.cmm @@@
+
+@@@ TESTFILE: ./test/09.cmm @@@
+
+@@@ TESTFILE: ./test/10.cmm @@@
