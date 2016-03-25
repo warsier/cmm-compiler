@@ -8,7 +8,7 @@ bison:
 	
 flex:
 	@flex lexical.l
-	@gcc main.c lex.yy.c -lfl -o scanner
+	@gcc mainf.c lex.yy.c -lfl -o scanner
 	@git add -A --ignore-errors
 	
 test: bison $(TEST_FILE_LIST)

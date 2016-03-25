@@ -8,6 +8,8 @@ TAB "	"
 SPACE " "
 ENTER "\n"
 
+TYPE int|float
+
 INT 0|[1-9][0-9]*
 FLOAT {INT}\.[0-9]+
 ID [_a-zA-Z][_0-9a-zA-Z]*
@@ -26,8 +28,6 @@ AND &&
 OR \|\|
 DOT \.
 NOT !
-
-TYPE int|float
 
 LP \(
 RP \)
@@ -55,6 +55,8 @@ WHILE while
 	{ELSE} {printf("ELSE");}
 	{WHILE} {printf("WHILE");}
 
+	{TYPE} {printf("TYPE");}
+
 	{INT} {printf("INT");}
 	{FLOAT} {printf("FLOAT");}
 	{ID} {printf("ID");}
@@ -63,12 +65,12 @@ WHILE while
 	{COMMA} {printf(",");}
 	{ASSIGNOP} {printf("=");}
 	{RELOP} {printf("RELOP");}
-	
+
 	{PLUS} {printf("+");}
 	{MINUS} {printf("-");}
 	{STAR} {printf("*");}
 	{DIV} {printf("/");}
-	
+
 	{AND} {printf("&&");}
 	{OR} {printf("||");}
 	{DOT} {printf(".");}
@@ -84,6 +86,7 @@ WHILE while
 	. { printf("\nError type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
 	*/
 
+
 	/* output for syntax analysis */
 	
 {TAB} {;}
@@ -96,21 +99,28 @@ WHILE while
 {ELSE} {return ELSE;}
 {WHILE} {return WHILE;}
 
+{TYPE} {return TYPE;}
+
 {INT} {return INT;}
 {FLOAT} {return FLOAT;}
 {ID} {return ID;}
+
 {SEMI} {return SEMI;}
 {COMMA} {return COMMA;}
 {ASSIGNOP} {return ASSIGNOP;}
 {RELOP} {return RELOP;}
+
 {PLUS} {return PLUS;}
 {MINUS} {return MINUS;}
 {STAR} {return STAR;}
 {DIV} {return DIV;}
+
 {AND} {return AND;}
 {OR} {return OR;}
 {DOT} {return DOT;}
 {NOT} {return NOT;}
+
+
 {LP} {return LP;}
 {RP} {return RP;}
 {LB} {return LB;}
@@ -119,7 +129,6 @@ WHILE while
 {RC} {return RC;}
 
 . { printf("Error type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
-
 
 %%
 
