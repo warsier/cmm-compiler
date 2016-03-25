@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	yyrestart(f);
-	//yyparse();
+	yyparse();
 	return 0;
 }
 
