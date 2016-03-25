@@ -3,19 +3,21 @@
 %}
 
 /* declared tokens */
-%token TAB SPACE ENTER
-%token STRUCT RETURN IF ELSE WHILE
-%token INT FLOAT ID
-%token SEMI COMMA
+%nonassoc TAB SPACE ENTER
 
-%left LP RP LB RB LC RC DOT
-%right NOT
-%left STAR DIV
-%left PLUS MINUS
-%left RELOP
-%left AND
-%left OR
 %right ASSIGNOP
+%left OR
+%left AND
+%left RELOP
+%left PLUS MINUS
+%left STAR DIV
+%right NOT
+%left LP RP LB RB LC RC DOT
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc STRUCT RETURN IF ELSE WHILE
+%nonassoc INT FLOAT ID TYPE
+%nonassoc SEMI COMMA
 
 %%
 
@@ -68,7 +70,7 @@ StmtList : Stmt StmtList
 Stmt : Exp SEMI
 	| CompSt
 	| RETURN Exp SEMI
-	| IF LP Exp RP Stmt
+	| IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
 	| IF LP Exp RP Stmt ELSE Stmt
 	| WHILE LP Exp RP Stmt
 	;
@@ -109,11 +111,6 @@ Exp : Exp ASSIGNOP Exp
 Args : Exp COMMA Args
 	| Exp
 	;
-
-/* others */
-TYPE : INT
-	| FLOAT
-	; 
 	
 %%
 #include "lex.yy.c"

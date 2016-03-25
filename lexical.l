@@ -27,7 +27,7 @@ OR \|\|
 DOT \.
 NOT !
 
-TYPE {INT}|{FLOAT}
+TYPE int|float
 
 LP \(
 RP \)
