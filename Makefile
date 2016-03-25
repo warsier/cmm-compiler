@@ -16,7 +16,7 @@ test: bison $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
-		./parser $$TEST_FILE | tee -a log.txt;\
+		./parser $$TEST_FILE 2>&1 | tee -a log.txt;\
 	done
 
 # if you want to test the function of flex, you should modify ./src/lexical.l to enable output
@@ -24,7 +24,7 @@ testf: flex $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
-		./scanner $$TEST_FILE | tee -a log.txt;\
+		./scanner $$TEST_FILE 2>&1 | tee -a log.txt;\
 	done
 	
 clean:
