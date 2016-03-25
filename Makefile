@@ -1,14 +1,15 @@
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
+SRC_DIR = ./src
 
 bison:
-	bison -d -v syntax.y
-	flex lexical.l
-	gcc main.c syntax.tab.c -lfl -ly -o parser
+	bison -d -v $(SRC_DIR)/syntax.y
+	flex $(SRC_DIR)/lexical.l
+	gcc $(SRC_DIR)/main.c syntax.tab.c -lfl -ly -o parser
 	@git add -A --ignore-errors
 	
 flex:
-	@flex lexical.l
-	@gcc mainf.c lex.yy.c -lfl -o scanner
+	@flex $(SRC_DIR)/lexical.l
+	@gcc $(SRC_DIR)/mainf.c lex.yy.c -lfl -o scanner
 	@git add -A --ignore-errors
 	
 test: bison $(TEST_FILE_LIST)
@@ -17,7 +18,8 @@ test: bison $(TEST_FILE_LIST)
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
 		./parser $$TEST_FILE | tee -a log.txt;\
 	done
-	
+
+# if you want to test the function of flex, you should modify ./src/lexical.l to enable output
 testf: flex $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
