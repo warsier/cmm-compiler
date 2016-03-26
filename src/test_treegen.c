@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include "../include/syntax_tree.h"
+#include "syntax_tree.h"
 
 int main()
 {

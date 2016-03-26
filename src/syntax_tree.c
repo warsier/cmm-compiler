@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
-#include "../include/syntax_tree.h"
+#include "syntax_tree.h"
 
 Node *createNode(int arity, ...)
 {

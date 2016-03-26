@@ -1,12 +1,13 @@
 CC             = gcc
 LD             = ld
-CFLAGS         = -ggdb -MD -Wall -Werror -fno-strict-aliasing -I./include -O2 -Wno-unused-result -fno-stack-protector
+CFLAGS         = -ggdb -MD -fno-strict-aliasing -I./include -O2 -Wno-unused-result -fno-stack-protector -lfl -ly
 CFILES         = $(shell find ./src -name "*.c")
 OBJS           = $(CFILES:.c=.o)
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
 SRC_DIR        = ./src
 
 all: $(OBJS)
+	make bison
 	$(CC) -o $(OBJS) $(CFLAGS)
 
 bison:
@@ -36,8 +37,8 @@ testf: flex $(TEST_FILE_LIST)
 	done
 	
 clean:
-	@rm -f scanner parser lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
 	@rm -f $(OBJS) $(OBJS:.o=.d)
+	@rm -f scanner parser lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
 	
 commit:
 	@make clean

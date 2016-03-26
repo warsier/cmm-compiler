@@ -1,7 +1,8 @@
 %{
 	#include <stdio.h>
-	#include <syntax_tree.h>
-	#define YYSTYPE Node 
+	#include "syntax.tab.h"
+	//#include "syntax_tree.h"
+	//#define YYSTYPE Node 
 	// attribute of all symbols are defined as "Node"
 %}
 
