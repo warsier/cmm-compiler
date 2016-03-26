@@ -6,9 +6,9 @@ OBJS           = $(CFILES:.c=.o)
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
 SRC_DIR        = ./src
 
-all: $(OBJS)
-	make bison
-	$(CC) -o $(OBJS) $(CFLAGS)
+#all: $(OBJS)
+#	make bison
+#	$(CC) -o $(OBJS) $(CFLAGS)
 
 bison:
 	bison -d -v $(SRC_DIR)/syntax.y

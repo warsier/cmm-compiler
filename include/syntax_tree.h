@@ -5,7 +5,8 @@ typedef unsigned bool;
 #define true 1
 #define false 0
 
-#define MAX_CHILDREN 10 // the number of children in c-- syntax will not exceed 10
+#define MAX_CHILDREN 10 // the number of children in c-- syntax will not exceed MAX_CHILDREN
+#define MAX_LEN 20 // the length of symbol and name shall not exceed MAX_LEN
 #define INDENT 2
 
 typedef struct Node
