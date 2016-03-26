@@ -4,21 +4,26 @@
 typedef unsigned bool;
 #define true 1
 #define false 0
-#define MAX_CHILDREN 10
+
+#define MAX_CHILDREN 10 // the number of children in c-- syntax will not exceed 10
+#define INDENT 2
 
 typedef struct Node
 {
-	bool isTerminal;
 	char *symbol, *name;
-	// "symbol" stores the kind of the symbols, while "name" stores the specific name of the symbol in the program.
+	// "symbol" stores the kind of the symbols, while "name" stores the specific name of the symbol in the program
 	int lineno;
 	union {
 		int intVal;
 		float floatVal;
 	};
-	int arity;
-	Node *children[MAX_CHILDREN];
-	
+	int arity; // if arity > 0, then this Node is nonterminal, otherwise it is terminal
+	struct Node *children[MAX_CHILDREN];
 } Node;
+
+Node *createNode(int arity, ...);
+int deleteNode(Node *p);
+void printTree(Node *p, int depth);
+void deleteTree(Node *p);
 
 #endif

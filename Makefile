@@ -1,15 +1,23 @@
+CC             = gcc
+LD             = ld
+CFLAGS         = -ggdb -MD -Wall -Werror -fno-strict-aliasing -I./include -O2 -Wno-unused-result -fno-stack-protector
+CFILES         = $(shell find ./src -name "*.c")
+OBJS           = $(CFILES:.c=.o)
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
-SRC_DIR = ./src
+SRC_DIR        = ./src
+
+all: $(OBJS)
+	$(CC) -o $(OBJS) $(CFLAGS)
 
 bison:
 	bison -d -v $(SRC_DIR)/syntax.y
 	flex $(SRC_DIR)/lexical.l
-	gcc $(SRC_DIR)/main.c syntax.tab.c -lfl -ly -o parser
+	$(CC) $(SRC_DIR)/main.c syntax.tab.c -lfl -ly -o parser
 	@git add -A --ignore-errors
 	
 flex:
 	@flex $(SRC_DIR)/lexical.l
-	@gcc $(SRC_DIR)/mainf.c lex.yy.c -lfl -o scanner
+	@$(CC) $(SRC_DIR)/mainf.c lex.yy.c -lfl -o scanner
 	@git add -A --ignore-errors
 	
 test: bison $(TEST_FILE_LIST)
@@ -29,6 +37,7 @@ testf: flex $(TEST_FILE_LIST)
 	
 clean:
 	@rm -f scanner parser lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
+	@rm -f $(OBJS) $(OBJS:.o=.d)
 	
 commit:
 	@make clean
