@@ -11,20 +11,23 @@ Node *createNode(int arity, ...)
 	Node *p = (Node *) malloc(sizeof(Node));
 	p->symbol = (char *) malloc(MAX_LEN);
 	p->text = (char *) malloc(MAX_LEN);
-	
-	p->arity = arity;	
+	p->arity = arity;
 	
 	va_list arg_ptr;
 	va_start(arg_ptr, arity);
 	int i;
-	for (i = 0; i < arity; i++) {
+	for (i = 0; i < p->arity; i++) {
 		Node *temp = va_arg(arg_ptr, Node *);
 		if (temp != NULL) {
 			p->children[i] = temp;
 		}
+		else {
+			i--; p->arity--;
+		}
 	}
-	
-	p->lineno = p->children[i]->lineno;
+		
+	if (p->arity > 0)
+		p->lineno = p->children[0]->lineno;
 	
 	return p;
 }

@@ -1,5 +1,6 @@
 // line 523 in lex.yy.c: lexical.l part 1
 #include <stdlib.h>
+#include <assert.h>
 #include "syntax.tab.h"
 #include "syntax_tree.h"
 
@@ -9,6 +10,7 @@ void procToken(int token, char *symbol)
 	Node *p = createNode(0);
 	strcpy(p->symbol, symbol);
 	strcpy(p->text, yytext);
+	assert(strlen(yytext) <= MAX_LEN);
 	p->lineno = yylineno;
 	if (strcmp(symbol, "INT") == 0)
 		p->intVal = atoi(yytext);

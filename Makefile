@@ -6,10 +6,6 @@ OBJS           = $(CFILES:.c=.o)
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
 SRC_DIR        = ./src
 
-#all: $(OBJS)
-#	make bison
-#	$(CC) -o $(OBJS) $(CFLAGS)
-
 tree:
 	bison -d -v $(SRC_DIR)/syntax.y
 	flex $(SRC_DIR)/lexical.l
@@ -17,7 +13,7 @@ tree:
 	@git add -A --ignore-errors
 
 testtree:
-	$(CC) ./src/test_treegen.c ./src/syntax_tree.c -I./include -o out
+	$(CC) ./test/test_treegen.c $(SRC_DIR)/syntax_tree.c -I./include -o out
 	
 test: tree $(TEST_FILE_LIST)
 	@rm -f log.txt
@@ -25,6 +21,9 @@ test: tree $(TEST_FILE_LIST)
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
 		./parser $$TEST_FILE 2>&1 | tee -a log.txt;\
 	done
+	
+gdb: tree $(TEST_FILE_LIST)
+	gdb --args ./parser ./test/03.cmm
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)
