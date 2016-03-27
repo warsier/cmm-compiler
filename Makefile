@@ -27,7 +27,7 @@ gdb: tree $(TEST_FILE_LIST)
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)
-	@rm -f scanner parser lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
+	@rm -f scanner parser out lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
 	
 commit:
 	@make clean

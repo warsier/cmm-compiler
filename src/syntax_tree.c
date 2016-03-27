@@ -23,6 +23,12 @@ Node *createNode(int arity, ...)
 		}
 		else {
 			i--; p->arity--;
+			/*
+			used to deal with recursive definitions like:
+			StmtList : Stmt StmtList 
+				|
+				;
+			*/
 		}
 	}
 		
@@ -34,6 +40,7 @@ Node *createNode(int arity, ...)
 
 int deleteNode(Node *p)
 {
+	printf("%s\n", p->symbol);
 	free(p->symbol);
 	free(p->text);
 	int i;
