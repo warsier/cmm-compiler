@@ -9,8 +9,6 @@ Node *createNode(int arity, ...)
 {
 	assert(arity <= MAX_CHILDREN);
 	Node *p = (Node *) malloc(sizeof(Node));
-	p->symbol = (char *) malloc(MAX_LEN);
-	p->text = (char *) malloc(MAX_LEN);
 	p->arity = arity;
 	
 	va_list arg_ptr;
@@ -41,11 +39,9 @@ Node *createNode(int arity, ...)
 int deleteNode(Node *p)
 {
 	printf("%s\n", p->symbol);
-	free(p->symbol);
-	free(p->text);
 	int i;
 	for (i = 0; i < p->arity; i++) {
-		free(p->children[i]);
+		deleteNode(p->children[i]);
 	}
 	free(p);
 	p = NULL;

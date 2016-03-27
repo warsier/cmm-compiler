@@ -1,11 +1,13 @@
 %{
 	#include <stdio.h>
+	#include <string.h>
 	#include "syntax_tree.h"
 	#define YYSTYPE Node* // attribute of all symbols are defined as a pointer towards Node
 	
 	Node *procNode(Node *p, char *symbol)
 	{
-		p->symbol = symbol;
+		strcpy(p->symbol, symbol);
+		strcpy(p->text, symbol);
 		return p;
 	}
 %}

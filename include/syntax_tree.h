@@ -11,7 +11,7 @@ typedef unsigned bool;
 
 typedef struct Node
 {
-	char *symbol, *text;
+	char symbol[MAX_LEN], text[MAX_LEN];
 	// "symbol" stores the kind of the symbols, while "text" stores the actual text the terminal symbol have in the program, like an INT may have value "15", and a TYPE may be "float". Note that only terminals have "text" attribute.
 	int lineno;
 	union {
