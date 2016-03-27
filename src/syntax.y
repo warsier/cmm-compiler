@@ -4,12 +4,20 @@
 	#include "syntax_tree.h"
 	#define YYSTYPE Node* // attribute of all symbols are defined as a pointer towards Node
 	
+	extern bool errorStat;
+	extern int yylineno;
+	
 	Node *procNode(Node *p, char *symbol)
 	{
 		strcpy(p->symbol, symbol);
 		strcpy(p->text, symbol);
 		return p;
 	}
+	
+	void yyerror(char* msg) {
+		printf("Error type B at Line %d: %s. [syntax error]\n", yylineno, msg);
+	}
+	
 %}
 
 /* declared tokens */
@@ -34,7 +42,8 @@
 /* High-level Definitions */
 Program : ExtDefList {
 		$$ = procNode(createNode(1, $1), "Program");
-		printTree($$, 0);
+		if(errorStat == false)
+			printTree($$, 0);
 		deleteNode($$);
 	}
 	;

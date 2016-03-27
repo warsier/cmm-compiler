@@ -2,6 +2,8 @@
 	#include <stdlib.h>
 	#include "syntax.tab.h"
 	#include "syntax_tree.h"
+	
+	bool errorStat = false;
 
 	// "token" is an enum type, "symbol" is what token looks like
 	void procToken(int token, char *symbol)
@@ -98,7 +100,7 @@ WHILE while
 	{LC} {printf("{");}
 	{RC} {printf("}");}
 
-	. { printf("\nError type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
+	. { printf("\nError type A at line %d: Mysterious character \'%s\'. [lexical error]\n", yylineno, yytext); }
 	*/
 
 
@@ -141,7 +143,10 @@ WHILE while
 {LC} {procToken(LC, "LC"); return LC;}
 {RC} {procToken(RC, "RC"); return RC;}
 
-. { printf("Error type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
+. { 
+	printf("Error type A at line %d: Mysterious characters \'%s\'. [lexical error]\n", yylineno, yytext); 
+	errorStat = true;
+}
 
 %%
 
