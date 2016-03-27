@@ -12,7 +12,7 @@ int main()
 {
 	Node *p = createNode(0);
 	strcpy(p->symbol, "TYPE");
-	strcpy(p->name, "int");
+	strcpy(p->text, "int");
 	Node *q = createNode(0);
 	strcpy(q->symbol, "INT");
 	q->intVal = 15;

@@ -6,13 +6,13 @@ typedef unsigned bool;
 #define false 0
 
 #define MAX_CHILDREN 10 // the number of children in c-- syntax will not exceed MAX_CHILDREN
-#define MAX_LEN 20 // the length of symbol and name shall not exceed MAX_LEN
+#define MAX_LEN 25 // the length of symbol and name shall not exceed MAX_LEN
 #define INDENT 2
 
 typedef struct Node
 {
-	char *symbol, *name;
-	// "symbol" stores the kind of the symbols, while "name" stores the specific name of the symbol in the program
+	char *symbol, *text;
+	// "symbol" stores the kind of the symbols, while "text" stores the actual text the terminal symbol have in the program, like an INT may have value "15", and a TYPE may be "float". Note that only terminals have "text" attribute.
 	int lineno;
 	union {
 		int intVal;

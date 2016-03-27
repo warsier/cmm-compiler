@@ -10,14 +10,8 @@ SRC_DIR        = ./src
 #	make bison
 #	$(CC) -o $(OBJS) $(CFLAGS)
 
-tree:
-	bison -d -v $(SRC_DIR)/syntax.y
-	flex $(SRC_DIR)/lexical.l
-	$(CC) $(SRC_DIR)/main.c syntax.tab.c $(CFLAGS) -o parser
-	@git add -A --ignore-errors
-
 testtree:
-	$(CC) ./src/test_treegen.c ./src/syntax_tree.c -I./include -o out
+	$(CC)  ./src/test_treegen.c ./src/syntax_tree.c -I./include -o out
 
 bison:
 	bison -d -v $(SRC_DIR)/syntax.y
