@@ -22,9 +22,9 @@ typedef struct Node
 	struct Node *children[MAX_CHILDREN];
 } Node;
 
-Node *createNode(int arity, ...);
-int deleteNode(Node *p);
-void printTree(Node *p, int depth);
-void deleteTree(Node *p);
+extern Node *createNode(int arity, ...);
+extern int deleteNode(Node *p);
+extern void printTree(Node *p, int depth);
+extern void deleteTree(Node *p);
 
 #endif
