@@ -35,7 +35,7 @@
 Program : ExtDefList {
 		$$ = procNode(createNode(1, $1), "Program");
 		printTree($$, 0);
-		deleteTree($$);
+		deleteNode($$);
 	}
 	;
 ExtDefList : ExtDef ExtDefList {$$ = procNode(createNode(2, $1, $2), "ExtDefList");}

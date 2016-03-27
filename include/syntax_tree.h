@@ -23,8 +23,7 @@ typedef struct Node
 } Node;
 
 extern Node *createNode(int arity, ...);
-extern int deleteNode(Node *p);
 extern void printTree(Node *p, int depth);
-extern void deleteTree(Node *p);
+extern void deleteNode(Node *p);
 
 #endif

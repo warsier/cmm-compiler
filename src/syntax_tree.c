@@ -36,18 +36,6 @@ Node *createNode(int arity, ...)
 	return p;
 }
 
-int deleteNode(Node *p)
-{
-	printf("%s\n", p->symbol);
-	int i;
-	for (i = 0; i < p->arity; i++) {
-		deleteNode(p->children[i]);
-	}
-	free(p);
-	p = NULL;
-	return 0;
-}
-
 void printTree(Node *p, int depth)
 {
 	printf("%*s%s", depth * INDENT, "", p->symbol);
@@ -74,10 +62,11 @@ void printTree(Node *p, int depth)
 	}
 }
 
-void deleteTree(Node *p)
+void deleteNode(Node *p)
 {
 	int i;
 	for (i = 0; i < p->arity; i++)
-		deleteTree(p->children[i]);
-	deleteNode(p);
+		deleteNode(p->children[i]);
+	free(p);
+	p = NULL;
 }
