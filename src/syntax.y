@@ -1,6 +1,5 @@
 %{
 	#include <stdio.h>
-	#include "syntax.tab.h"
 	#include "syntax_tree.h"
 	#define YYSTYPE Node* // attribute of all symbols are defined as a pointer towards Node
 	
