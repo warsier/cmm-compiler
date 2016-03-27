@@ -106,40 +106,40 @@ WHILE while
 	
 {BLANK} {;}
 
-{STRUCT} {proc(STRUCT, "STRUCT"); return STRUCT;}
-{RETURN} {proc(RETURN, "RETURN"); return RETURN;} 
-{IF} {proc(IF, "IF"); return IF;}
-{ELSE} {proc(ELSE, "ELSE"); return ELSE;}
-{WHILE} {proc(WHILE, "WHILE"); return WHILE;}
+{STRUCT} {procToken(STRUCT, "STRUCT"); return STRUCT;}
+{RETURN} {procToken(RETURN, "RETURN"); return RETURN;} 
+{IF} {procToken(IF, "IF"); return IF;}
+{ELSE} {procToken(ELSE, "ELSE"); return ELSE;}
+{WHILE} {procToken(WHILE, "WHILE"); return WHILE;}
 
-{TYPE} {proc(TYPE, "TYPE"); return TYPE;}
+{TYPE} {procToken(TYPE, "TYPE"); return TYPE;}
 
-{INT} {proc(INT, "INT"); return INT;}
-{FLOAT} {proc(FLOAT, "FLOAT"); return FLOAT;}
-{ID} {proc(ID, "ID"); return ID;}
+{INT} {procToken(INT, "INT"); return INT;}
+{FLOAT} {procToken(FLOAT, "FLOAT"); return FLOAT;}
+{ID} {procToken(ID, "ID"); return ID;}
 
-{SEMI} {proc(SEMI, "SEMI"); return SEMI;}
-{COMMA} {proc(COMMA, "COMMA"); return COMMA;}
-{ASSIGNOP} {proc(ASSIGNOP, "ASSIGNOP"); return ASSIGNOP;}
-{RELOP} {proc(RELOP, "RELOP"); return RELOP;}
+{SEMI} {procToken(SEMI, "SEMI"); return SEMI;}
+{COMMA} {procToken(COMMA, "COMMA"); return COMMA;}
+{ASSIGNOP} {procToken(ASSIGNOP, "ASSIGNOP"); return ASSIGNOP;}
+{RELOP} {procToken(RELOP, "RELOP"); return RELOP;}
 
-{PLUS} {proc(PLUS, "PLUS"); return PLUS;}
-{MINUS} {proc(MINUS, "MINUS"); return MINUS;}
-{STAR} {proc(STAR, "STAR"); return STAR;}
-{DIV} {proc(DIV, "DIV"); return DIV;}
+{PLUS} {procToken(PLUS, "PLUS"); return PLUS;}
+{MINUS} {procToken(MINUS, "MINUS"); return MINUS;}
+{STAR} {procToken(STAR, "STAR"); return STAR;}
+{DIV} {procToken(DIV, "DIV"); return DIV;}
 
-{AND} {proc(AND, "AND"); return AND;}
-{OR} {proc(OR, "OR"); return OR;}
-{DOT} {proc(DOT, "DOT"); return DOT;}
-{NOT} {proc(NOT, "NOT"); return NOT;}
+{AND} {procToken(AND, "AND"); return AND;}
+{OR} {procToken(OR, "OR"); return OR;}
+{DOT} {procToken(DOT, "DOT"); return DOT;}
+{NOT} {procToken(NOT, "NOT"); return NOT;}
 
 
-{LP} {proc(LP, "LP"); return LP;}
-{RP} {proc(RP, "RP"); return RP;}
-{LB} {proc(LB, "LB"); return LB;}
-{RB} {proc(RB, "RB"); return RB;}
-{LC} {proc(LC, "LC"); return LC;}
-{RC} {proc(RC, "RC"); return RC;}
+{LP} {procToken(LP, "LP"); return LP;}
+{RP} {procToken(RP, "RP"); return RP;}
+{LB} {procToken(LB, "LB"); return LB;}
+{RB} {procToken(RB, "RB"); return RB;}
+{LC} {procToken(LC, "LC"); return LC;}
+{RC} {procToken(RC, "RC"); return RC;}
 
 . { printf("Error type A at line %d: Mysterious characters \'%s\' [lexical error]\n", yylineno, yytext); }
 
