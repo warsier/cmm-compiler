@@ -27,6 +27,7 @@ BLANK [ \t\n]
 
 TYPE int|float
 
+
 INT 0|[1-9][0-9]*
 FLOAT {INT}\.[0-9]+
 ID [_a-zA-Z][_0-9a-zA-Z]*
