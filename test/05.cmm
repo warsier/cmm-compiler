@@ -1,5 +1,6 @@
 int main()
 {
+	int p = 0;
 	int i = 0123;
 	int j = 0x3F;
 }

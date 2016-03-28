@@ -24,6 +24,10 @@
 		}
 		if (strcmp(symbol, "FLOAT") == 0)
 			p->floatVal = atof(yytext);
+		if (strcmp(symbol, "SCI") == 0) {
+			strcpy(p->symbol, "FLOAT");
+			p->floatVal = atof(yytext);
+		}
 			
 		yylval = p;
 	}
@@ -39,6 +43,7 @@ INT 0|[1-9][0-9]*
 OCT 0[0-7]+
 HEX 0[xX][0-9a-fA-F]*
 FLOAT {INT}\.[0-9]+
+SCI [0-9]*\.[0-9]+[Ee][\+\-]{INT}
 ID [_a-zA-Z][_0-9a-zA-Z]*
 
 SEMI ;
@@ -88,6 +93,7 @@ WHILE while
 	{HEX} {printf("HEX");}
 	{INT} {printf("INT");}
 	{FLOAT} {printf("FLOAT");}
+	{SCI} {printf("SCI");}
 	{ID} {printf("ID");}
 
 	{SEMI} {printf(";");}
@@ -132,6 +138,7 @@ WHILE while
 {OCT} {procToken(OCT, "OCT"); return INT;}
 {HEX} {procToken(HEX, "HEX"); return INT;}
 {FLOAT} {procToken(FLOAT, "FLOAT"); return FLOAT;}
+{SCI} {procToken(SCI, "SCI"); return FLOAT;}
 {ID} {procToken(ID, "ID"); return ID;}
 
 {SEMI} {procToken(SEMI, "SEMI"); return SEMI;}
