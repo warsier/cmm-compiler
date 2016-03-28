@@ -1,1 +1,2 @@
-incorrect output dealing with negative numbers
+1 incorrect output dealing with negative numbers
+2 the output of syntax error does not correspond to the book completely
