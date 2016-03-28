@@ -35,7 +35,9 @@
 
 %option yylineno
 /* Tokens */
-COMMENT (\/\/.*\n)|(\/\*(?s:.)*\*\/)
+
+DBLSLASH \/\/
+SLASHSTAR \/\*
 
 TAB \t
 SPACE " "
@@ -79,54 +81,27 @@ ELSE else
 WHILE while
 
 %%
-	/* output for testing */
-{COMMENT} {printf("COMMENT\n");}
-
-{TAB} {printf("\t");}
-{SPACE} {printf(" ");}
-{ENTER} {printf("\n");}
-
-{STRUCT} {printf("STRUCT");}
-{RETURN} {printf("RETURN");}
-{IF} {printf("IF");}
-{ELSE} {printf("ELSE");}
-{WHILE} {printf("WHILE");}
-
-{TYPE} {printf("TYPE");}
-
-{OCT} {printf("OCT");}
-{HEX} {printf("HEX");}
-{INT} {printf("INT");}
-{FLOAT} {printf("FLOAT");}
-{SCI} {printf("SCI");}
-{ID} {printf("ID");}
-
-{SEMI} {printf(";");}
-{COMMA} {printf(",");}
-{ASSIGNOP} {printf("=");}
-{RELOP} {printf("RELOP");}
-
-{PLUS} {printf("+");}
-{MINUS} {printf("-");}
-{STAR} {printf("*");}
-{DIV} {printf("/");}
-
-{AND} {printf("&&");}
-{OR} {printf("||");}
-{DOT} {printf(".");}
-{NOT} {printf("!");}
-
-{LP} {printf("(");}
-{RP} {printf(")");}
-{LB} {printf("[");}
-{RB} {printf("]");}
-{LC} {printf("{");}
-{RC} {printf("}");}
-
-. { printf("\nError type A at line %d: Mysterious character \'%s\'. [lexical error]\n", yylineno, yytext); }
-
 	/* output for syntax analysis */
 	/*
+	{DBLSLASH} {
+		char c = input();
+		while (c != '\n')
+			c = input();
+	}
+	{SLASHSTAR} {
+		char c = input();
+		while (true) {
+			if (c == '*') {
+				c = input();
+				if (c == '/') break;
+				else {
+					unput('/');
+					unput('*');
+				}
+			}
+			c = input();
+		}
+	}
 	{TAB} {;}
 	{SPACE} {;}
 	{ENTER} {;}
@@ -174,6 +149,72 @@ WHILE while
 		errorStat = true;
 	}
 	*/
+
+
+	/* output for testing */
+
+{DBLSLASH} {
+	char c = input();
+	while (c != '\n')
+		c = input();
+}
+{SLASHSTAR} {
+	char c = input();
+	while (true) {
+		if (c == '*') {
+			c = input();
+			if (c == '/') break;
+			else {
+				unput('/');
+				unput('*');
+			}
+		}
+		c = input();
+	}
+}
+{TAB} {printf("\t");}
+{SPACE} {printf(" ");}
+{ENTER} {printf("\n");}
+
+{STRUCT} {printf("STRUCT");}
+{RETURN} {printf("RETURN");}
+{IF} {printf("IF");}
+{ELSE} {printf("ELSE");}
+{WHILE} {printf("WHILE");}
+
+{TYPE} {printf("TYPE");}
+
+{OCT} {printf("OCT");}
+{HEX} {printf("HEX");}
+{INT} {printf("INT");}
+{FLOAT} {printf("FLOAT");}
+{SCI} {printf("SCI");}
+{ID} {printf("ID");}
+
+{SEMI} {printf(";");}
+{COMMA} {printf(",");}
+{ASSIGNOP} {printf("=");}
+{RELOP} {printf("RELOP");}
+
+{PLUS} {printf("+");}
+{MINUS} {printf("-");}
+{STAR} {printf("*");}
+{DIV} {printf("/");}
+
+{AND} {printf("&&");}
+{OR} {printf("||");}
+{DOT} {printf(".");}
+{NOT} {printf("!");}
+
+{LP} {printf("(");}
+{RP} {printf(")");}
+{LB} {printf("[");}
+{RB} {printf("]");}
+{LC} {printf("{");}
+{RC} {printf("}");}
+
+. { printf("\nError type A at line %d: Mysterious character \'%s\'. [lexical error]\n", yylineno, yytext); }
+
 
 %%
 
