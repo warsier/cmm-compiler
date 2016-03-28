@@ -14,6 +14,14 @@
 		p->lineno = yylineno;
 		if (strcmp(symbol, "INT") == 0)
 			p->intVal = atoi(yytext);
+		if (strcmp(symbol, "OCT") == 0) {
+			strcpy(p->symbol, "INT");
+			p->intVal = strtol(yytext, NULL, 8);
+		}
+		if (strcmp(symbol, "HEX") == 0) {
+			strcpy(p->symbol, "INT");
+			p->intVal = strtol(yytext, NULL, 16);
+		}
 		if (strcmp(symbol, "FLOAT") == 0)
 			p->floatVal = atof(yytext);
 			
@@ -27,8 +35,9 @@ BLANK [ \t\n]
 
 TYPE int|float
 
-
 INT 0|[1-9][0-9]*
+OCT 0[0-7]+
+HEX 0[xX][0-9a-fA-F]*
 FLOAT {INT}\.[0-9]+
 ID [_a-zA-Z][_0-9a-zA-Z]*
 
@@ -75,6 +84,8 @@ WHILE while
 
 	{TYPE} {printf("TYPE");}
 
+	{OCT} {printf("OCT");}
+	{HEX} {printf("HEX");}
 	{INT} {printf("INT");}
 	{FLOAT} {printf("FLOAT");}
 	{ID} {printf("ID");}
@@ -118,6 +129,8 @@ WHILE while
 {TYPE} {procToken(TYPE, "TYPE"); return TYPE;}
 
 {INT} {procToken(INT, "INT"); return INT;}
+{OCT} {procToken(OCT, "OCT"); return INT;}
+{HEX} {procToken(HEX, "HEX"); return INT;}
 {FLOAT} {procToken(FLOAT, "FLOAT"); return FLOAT;}
 {ID} {procToken(ID, "ID"); return ID;}
 

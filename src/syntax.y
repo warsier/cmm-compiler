@@ -37,7 +37,7 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc STRUCT RETURN IF ELSE WHILE
-%nonassoc INT FLOAT ID TYPE
+%nonassoc INT OCT HEX FLOAT ID TYPE
 %nonassoc SEMI COMMA
 
 %%
