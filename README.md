@@ -34,16 +34,16 @@ make test
 ```
 The result will be output both to the shell and ```$(DIR)/log.txt```.
 
-To debug specific files in ```$(DIR)/test```, modify the file directory in command  ```gdb``` in ```Makefile```. Then use command:
+To debug specific files in ```$(DIR)/test```, modify the file directory in command  ```gdb``` in ```Makefile```. Then use command
 ```Bash
 make gdb
 ```
 The result will be output to ```$(DIR)/log.txt```.
 
-To clean up all temporary files generated, use command:
+To clean up all temporary files generated, use command
 ```Bash
 make clean
 ```
-
+ 	
 There are some control values in file ```$(DIR)/include/syntax_tree.h```.
 
