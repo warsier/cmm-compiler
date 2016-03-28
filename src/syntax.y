@@ -14,11 +14,14 @@
 		return p;
 	}
 	
-	void yyerror(char* msg) {
+	void yyerror(const char* msg) {
 		printf("Error type B at Line %d: %s. [syntax error]\n", yylineno, msg);
+		errorStat = true;
 	}
 	
 %}
+
+%define parse.error verbose
 
 /* declared tokens */
 %nonassoc TAB SPACE ENTER
@@ -96,6 +99,7 @@ Stmt : Exp SEMI {$$ = procNode(createNode(2, $1, $2), "Stmt");}
 	| IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {$$ = procNode(createNode(5, $1, $2, $3, $4, $5), "Stmt");}
 	| IF LP Exp RP Stmt ELSE Stmt {$$ = procNode(createNode(7, $1, $2, $3, $4, $5, $6, $7), "Stmt");}
 	| WHILE LP Exp RP Stmt {$$ = procNode(createNode(5, $1, $2, $3, $4, $5), "Stmt");}
+	| error SEMI
 	;
 	
 /* Local Definitions */
