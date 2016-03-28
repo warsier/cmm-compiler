@@ -2,4 +2,9 @@ int main()
 {
 	int i = 1;
 	int j = ~i;
+	int k = -1;
+	{
+		if (i == 1)
+			j = 2;
+	}
 }

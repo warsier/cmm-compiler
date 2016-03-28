@@ -45,7 +45,7 @@
 /* High-level Definitions */
 Program : ExtDefList {
 		$$ = procNode(createNode(1, $1), "Program");
-		if(errorStat == false)
+		if(errorStat == false || ALWAYS_OUTPUT_TREE == 1)
 			printTree($$, 0);
 		deleteNode($$);
 	}
