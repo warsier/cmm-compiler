@@ -53,3 +53,10 @@ make clean
  	
 You can control the indent of the output syntax tree or always enable output regardless of the errors by modify values in file ```$(DIR)/include/syntax_tree.h```.
 
+## 2. Data Structure
+I use a struct type "Node" to implement a syntactic unit, the definition can be found in ```$(DIR)/include/syntax_tree.h```. The members in Node are all static.
+
+I define two functions in ```$(DIR)/src/syntax_tree.c``` to create a Node and delete Nodes. Function ```printTree``` is also defined in it, which is used to print the whole syntax tree.
+
+Meanwhile, the assignment for specific terminal or nonterminal Nodes are done in ```$(DIR)/lexical.l``` and ```$(DIR)/syntax.y```.
+
