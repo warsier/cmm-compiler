@@ -35,7 +35,10 @@ To perform tests on all ```.cmm``` files in folder ```$(DIR)/test```, use comman
 ```Bash
 make test
 ```
-Note that the program can only identify ```.cmm``` source files in ```$(DIR)/test```.
+Note that the program can only identify ```.cmm``` source files in ```$(DIR)/test``` automatically, if you want to test on other files, please compile the project first and use command
+```Bash
+$(DIR)/parser $(YOUR_FILE_NAME) 
+```
 The result will be output both to the shell and ```$(DIR)/log.txt```.
 
 You can comment out codes in ```$(DIR)/src/lexical.l``` to test the lexical analysis part.
