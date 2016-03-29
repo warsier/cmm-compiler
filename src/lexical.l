@@ -82,76 +82,6 @@ WHILE while
 
 %%
 	/* output for syntax analysis */
-	/*
-	{DBLSLASH} {
-		char c = input();
-		while (c != '\n')
-			c = input();
-	}
-	{SLASHSTAR} {
-		char c = input();
-		while (true) {
-			if (c == '*') {
-				c = input();
-				if (c == '/') break;
-				else {
-					unput('/');
-					unput('*');
-				}
-			}
-			c = input();
-		}
-	}
-	{TAB} {;}
-	{SPACE} {;}
-	{ENTER} {;}
-
-	{STRUCT} {procToken(STRUCT, "STRUCT"); return STRUCT;}
-	{RETURN} {procToken(RETURN, "RETURN"); return RETURN;} 
-	{IF} {procToken(IF, "IF"); return IF;}
-	{ELSE} {procToken(ELSE, "ELSE"); return ELSE;}
-	{WHILE} {procToken(WHILE, "WHILE"); return WHILE;}
-
-	{TYPE} {procToken(TYPE, "TYPE"); return TYPE;}
-
-	{INT} {procToken(INT, "INT"); return INT;}
-	{OCT} {procToken(OCT, "OCT"); return INT;}
-	{HEX} {procToken(HEX, "HEX"); return INT;}
-	{FLOAT} {procToken(FLOAT, "FLOAT"); return FLOAT;}
-	{SCI} {procToken(SCI, "SCI"); return FLOAT;}
-	{ID} {procToken(ID, "ID"); return ID;}
-
-	{SEMI} {procToken(SEMI, "SEMI"); return SEMI;}
-	{COMMA} {procToken(COMMA, "COMMA"); return COMMA;}
-	{ASSIGNOP} {procToken(ASSIGNOP, "ASSIGNOP"); return ASSIGNOP;}
-	{RELOP} {procToken(RELOP, "RELOP"); return RELOP;}
-
-	{PLUS} {procToken(PLUS, "PLUS"); return PLUS;}
-	{MINUS} {procToken(MINUS, "MINUS"); return MINUS;}
-	{STAR} {procToken(STAR, "STAR"); return STAR;}
-	{DIV} {procToken(DIV, "DIV"); return DIV;}
-
-	{AND} {procToken(AND, "AND"); return AND;}
-	{OR} {procToken(OR, "OR"); return OR;}
-	{DOT} {procToken(DOT, "DOT"); return DOT;}
-	{NOT} {procToken(NOT, "NOT"); return NOT;}
-
-
-	{LP} {procToken(LP, "LP"); return LP;}
-	{RP} {procToken(RP, "RP"); return RP;}
-	{LB} {procToken(LB, "LB"); return LB;}
-	{RB} {procToken(RB, "RB"); return RB;}
-	{LC} {procToken(LC, "LC"); return LC;}
-	{RC} {procToken(RC, "RC"); return RC;}
-
-	. { 
-		printf("Error type A at line %d: Mysterious characters \'%s\'. [lexical error]\n", yylineno, yytext); 
-		errorStat = true;
-	}
-	*/
-
-
-	/* output for testing */
 
 {DBLSLASH} {
 	char c = input();
@@ -164,57 +94,118 @@ WHILE while
 		if (c == '*') {
 			c = input();
 			if (c == '/') break;
-			else {
-				unput('/');
-				unput('*');
-			}
 		}
 		c = input();
 	}
 }
-{TAB} {printf("\t");}
-{SPACE} {printf(" ");}
-{ENTER} {printf("\n");}
+{TAB} {;}
+{SPACE} {;}
+{ENTER} {;}
 
-{STRUCT} {printf("STRUCT");}
-{RETURN} {printf("RETURN");}
-{IF} {printf("IF");}
-{ELSE} {printf("ELSE");}
-{WHILE} {printf("WHILE");}
+{STRUCT} {procToken(STRUCT, "STRUCT"); return STRUCT;}
+{RETURN} {procToken(RETURN, "RETURN"); return RETURN;} 
+{IF} {procToken(IF, "IF"); return IF;}
+{ELSE} {procToken(ELSE, "ELSE"); return ELSE;}
+{WHILE} {procToken(WHILE, "WHILE"); return WHILE;}
 
-{TYPE} {printf("TYPE");}
+{TYPE} {procToken(TYPE, "TYPE"); return TYPE;}
 
-{OCT} {printf("OCT");}
-{HEX} {printf("HEX");}
-{INT} {printf("INT");}
-{FLOAT} {printf("FLOAT");}
-{SCI} {printf("SCI");}
-{ID} {printf("ID");}
+{INT} {procToken(INT, "INT"); return INT;}
+{OCT} {procToken(OCT, "OCT"); return INT;}
+{HEX} {procToken(HEX, "HEX"); return INT;}
+{FLOAT} {procToken(FLOAT, "FLOAT"); return FLOAT;}
+{SCI} {procToken(SCI, "SCI"); return FLOAT;}
+{ID} {procToken(ID, "ID"); return ID;}
 
-{SEMI} {printf(";");}
-{COMMA} {printf(",");}
-{ASSIGNOP} {printf("=");}
-{RELOP} {printf("RELOP");}
+{SEMI} {procToken(SEMI, "SEMI"); return SEMI;}
+{COMMA} {procToken(COMMA, "COMMA"); return COMMA;}
+{ASSIGNOP} {procToken(ASSIGNOP, "ASSIGNOP"); return ASSIGNOP;}
+{RELOP} {procToken(RELOP, "RELOP"); return RELOP;}
 
-{PLUS} {printf("+");}
-{MINUS} {printf("-");}
-{STAR} {printf("*");}
-{DIV} {printf("/");}
+{PLUS} {procToken(PLUS, "PLUS"); return PLUS;}
+{MINUS} {procToken(MINUS, "MINUS"); return MINUS;}
+{STAR} {procToken(STAR, "STAR"); return STAR;}
+{DIV} {procToken(DIV, "DIV"); return DIV;}
 
-{AND} {printf("&&");}
-{OR} {printf("||");}
-{DOT} {printf(".");}
-{NOT} {printf("!");}
+{AND} {procToken(AND, "AND"); return AND;}
+{OR} {procToken(OR, "OR"); return OR;}
+{DOT} {procToken(DOT, "DOT"); return DOT;}
+{NOT} {procToken(NOT, "NOT"); return NOT;}
 
-{LP} {printf("(");}
-{RP} {printf(")");}
-{LB} {printf("[");}
-{RB} {printf("]");}
-{LC} {printf("{");}
-{RC} {printf("}");}
 
-. { printf("\nError type A at line %d: Mysterious character \'%s\'. [lexical error]\n", yylineno, yytext); }
+{LP} {procToken(LP, "LP"); return LP;}
+{RP} {procToken(RP, "RP"); return RP;}
+{LB} {procToken(LB, "LB"); return LB;}
+{RB} {procToken(RB, "RB"); return RB;}
+{LC} {procToken(LC, "LC"); return LC;}
+{RC} {procToken(RC, "RC"); return RC;}
 
+. { 
+	printf("Error type A at line %d: Mysterious characters \'%s\'. [lexical error]\n", yylineno, yytext); 
+	errorStat = true;
+}
+
+
+	/* output for testing */
+	/*
+	{DBLSLASH} {
+		char c = input();
+		while (c != '\n')
+			c = input();
+	}
+	{SLASHSTAR} {
+		char c = input();
+		while (true) {
+			if (c == '*') {
+				c = input();
+				if (c == '/') break;
+			}
+			c = input();
+		}
+	}
+	{TAB} {printf("\t");}
+	{SPACE} {printf(" ");}
+	{ENTER} {printf("\n");}
+
+	{STRUCT} {printf("STRUCT");}
+	{RETURN} {printf("RETURN");}
+	{IF} {printf("IF");}
+	{ELSE} {printf("ELSE");}
+	{WHILE} {printf("WHILE");}
+
+	{TYPE} {printf("TYPE");}
+
+	{OCT} {printf("OCT");}
+	{HEX} {printf("HEX");}
+	{INT} {printf("INT");}
+	{FLOAT} {printf("FLOAT");}
+	{SCI} {printf("SCI");}
+	{ID} {printf("ID");}
+
+	{SEMI} {printf(";");}
+	{COMMA} {printf(",");}
+	{ASSIGNOP} {printf("=");}
+	{RELOP} {printf("RELOP");}
+
+	{PLUS} {printf("+");}
+	{MINUS} {printf("-");}
+	{STAR} {printf("*");}
+	{DIV} {printf("/");}
+
+	{AND} {printf("&&");}
+	{OR} {printf("||");}
+	{DOT} {printf(".");}
+	{NOT} {printf("!");}
+
+	{LP} {printf("(");}
+	{RP} {printf(")");}
+	{LB} {printf("[");}
+	{RB} {printf("]");}
+	{LC} {printf("{");}
+	{RC} {printf("}");}
+
+	. { printf("\nError type A at line %d: Mysterious character \'%s\'. [lexical error]\n", yylineno, yytext); }
+	*/
 
 %%
 
