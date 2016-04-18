@@ -23,7 +23,7 @@ test: tree $(TEST_FILE_LIST)
 	done
 	
 gdb: tree $(TEST_FILE_LIST)
-	gdb --args ./parser ./test/10.cmm | tee -a log.txt
+	gdb --args ./parser ./test/06.cmm | tee -a log.txt
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)

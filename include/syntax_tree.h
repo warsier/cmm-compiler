@@ -9,7 +9,7 @@ typedef unsigned bool;
 #define MAX_LEN 30 // the length of symbol and name shall not exceed MAX_LEN
 
 #define INDENT 2 // control the output indent of the syntax tree
-#define ALWAYS_OUTPUT_TREE 0 // used to enable syntax tree output in testing, default value is 0
+#define ALWAYS_OUTPUT_TREE 1 // used to enable syntax tree output in testing, default value is 0
 
 typedef struct Node
 {
