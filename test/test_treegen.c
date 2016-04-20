@@ -3,20 +3,20 @@
 #include <assert.h>
 #include "syntax_tree.h"
 
-extern Node *createNode(int arity, ...);
-extern int deleteNode(Node *p);
-extern void printTree(Node *p, int depth);
-extern void deleteTree(Node *p);
+extern TreeNode *createTreeNode(int arity, ...);
+extern int deleteTreeNode(TreeNode *p);
+extern void printTree(TreeNode *p, int depth);
+extern void deleteTree(TreeNode *p);
 
 int main()
 {
-	Node *p = createNode(0);
+	TreeNode *p = createTreeNode(0);
 	strcpy(p->symbol, "TYPE");
 	strcpy(p->text, "int");
-	Node *q = createNode(0);
+	TreeNode *q = createTreeNode(0);
 	strcpy(q->symbol, "INT");
 	q->intVal = 15;
-	Node *r = createNode(2, p, q);
+	TreeNode *r = createTreeNode(2, p, q);
 	printTree(r, 0);
 	deleteTree(r);
 	return 0;

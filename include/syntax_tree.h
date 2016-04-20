@@ -11,7 +11,7 @@ typedef unsigned bool;
 #define INDENT 2 // control the output indent of the syntax tree
 #define ALWAYS_OUTPUT_TREE 1 // used to enable syntax tree output in testing, default value is 0
 
-typedef struct Node
+typedef struct TreeNode
 {
 	char symbol[MAX_LEN], text[MAX_LEN];
 	// "symbol" stores the kind of the symbols, while "text" stores the actual text the symbol have in the program, like an INT may have value "15", and a TYPE may be "float". Note that the "text" value of a nonterminal is the same to "symbol".
@@ -21,11 +21,11 @@ typedef struct Node
 		float floatVal;
 	};
 	int arity; // if arity > 0, then this Node is nonterminal, otherwise it is terminal
-	struct Node *children[MAX_CHILDREN];
-} Node;
+	struct TreeNode *children[MAX_CHILDREN];
+} TreeNode;
 
-extern Node *createNode(int arity, ...);
-extern void printTree(Node *p, int depth);
-extern void deleteNode(Node *p);
+extern TreeNode *createTreeNode(int arity, ...);
+extern void printTree(TreeNode *p, int depth);
+extern void deleteTreeNode(TreeNode *p);
 
 #endif

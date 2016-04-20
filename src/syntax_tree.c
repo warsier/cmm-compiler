@@ -5,17 +5,17 @@
 #include <stdarg.h>
 #include "syntax_tree.h"
 
-Node *createNode(int arity, ...)
+TreeNode *createTreeNode(int arity, ...)
 {
 	assert(arity <= MAX_CHILDREN);
-	Node *p = (Node *) malloc(sizeof(Node));
+	TreeNode *p = (TreeNode *) malloc(sizeof(TreeNode));
 	p->arity = arity;
 	
 	va_list arg_ptr;
 	va_start(arg_ptr, arity);
 	int i;
 	for (i = 0; i < p->arity; i++) {
-		Node *temp = va_arg(arg_ptr, Node *);
+		TreeNode *temp = va_arg(arg_ptr, TreeNode *);
 		if (temp != NULL) {
 			p->children[i] = temp;
 		}
@@ -36,7 +36,7 @@ Node *createNode(int arity, ...)
 	return p;
 }
 
-void printTree(Node *p, int depth)
+void printTree(TreeNode *p, int depth)
 {
 	printf("%*s%s", depth * INDENT, "", p->symbol);
 	if (p->arity == 0) {
@@ -62,11 +62,11 @@ void printTree(Node *p, int depth)
 	}
 }
 
-void deleteNode(Node *p)
+void deleteTreeNode(TreeNode *p)
 {
 	int i;
 	for (i = 0; i < p->arity; i++)
-		deleteNode(p->children[i]);
+		deleteTreeNode(p->children[i]);
 	free(p);
 	p = NULL;
 }

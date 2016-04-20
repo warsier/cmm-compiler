@@ -8,7 +8,7 @@
 	// "token" is an enum type, "symbol" is what token looks like
 	void procToken(int token, char *symbol)
 	{
-		Node *p = createNode(0);
+		TreeNode *p = createTreeNode(0);
 		strcpy(p->symbol, symbol);
 		strcpy(p->text, yytext);
 		p->lineno = yylineno;
