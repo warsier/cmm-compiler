@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 extern FILE *yyin;
 void yyrestart(FILE *);
 void yyparse();

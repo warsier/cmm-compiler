@@ -2,6 +2,7 @@
 	#include <stdlib.h>
 	#include "syntax.tab.h"
 	#include "syntax_tree.h"
+	#include "common.h"
 	
 	bool errorStat = false;
 

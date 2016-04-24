@@ -2,6 +2,7 @@
 	#include <stdio.h>
 	#include <string.h>
 	#include "syntax_tree.h"
+	#include "common.h"
 	#define YYSTYPE TreeNode* // attribute of all symbols are defined as a pointer towards TreeNode
 	
 	extern bool errorStat;

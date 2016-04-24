@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "symbol_table.h"
+#include "common.h"
 
 unsigned int hash(char *name)
 {
