@@ -13,19 +13,19 @@
 		strcpy(p->symbol, symbol);
 		strcpy(p->text, yytext);
 		p->lineno = yylineno;
-		if (strcmp(symbol, "INT") == 0)
+		if (STREQ(symbol, "INT"))
 			p->intVal = atoi(yytext);
-		if (strcmp(symbol, "OCT") == 0) {
+		if (STREQ(symbol, "OCT")) {
 			strcpy(p->symbol, "INT");
 			p->intVal = strtol(yytext, NULL, 8);
 		}
-		if (strcmp(symbol, "HEX") == 0) {
+		if (STREQ(symbol, "HEX")) {
 			strcpy(p->symbol, "INT");
 			p->intVal = strtol(yytext, NULL, 16);
 		}
-		if (strcmp(symbol, "FLOAT") == 0)
+		if (STREQ(symbol, "FLOAT"))
 			p->floatVal = atof(yytext);
-		if (strcmp(symbol, "SCI") == 0) {
+		if (STREQ(symbol, "SCI")) {
 			strcpy(p->symbol, "FLOAT");
 			p->floatVal = atof(yytext);
 		}

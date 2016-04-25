@@ -46,6 +46,8 @@ typedef struct SymbolStackNode {
 } SymbolStackNode;
 
 unsigned int hashSymbol(char *name);
+void procExtDef(TreeNode *p);
+void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 
 #endif

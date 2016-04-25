@@ -34,5 +34,5 @@ commit:
 	@make clean
 	@git add -A --ignore-errors
 	@git commit -a
-	@git push origin master
+	@git push origin dev
 

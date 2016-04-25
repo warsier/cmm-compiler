@@ -41,15 +41,15 @@ void printTree(TreeNode *p, int depth)
 {
 	printf("%*s%s", depth * INDENT, "", p->symbol);
 	if (p->arity == 0) {
-		if (strcmp(p->symbol, "TYPE") == 0)
+		if (STREQ(p->symbol, "TYPE"))
 			printf(": %s\n", p->text);
-		else if (strcmp(p->symbol, "ID") == 0)
+		else if (STREQ(p->symbol, "ID"))
 			printf(": %s\n", p->text);
-		else if (strcmp(p->symbol, "RELOP") == 0)
+		else if (STREQ(p->symbol, "RELOP"))
 			printf(": %s\n", p->text);
-		else if (strcmp(p->symbol, "INT") == 0)
+		else if (STREQ(p->symbol, "INT"))
 			printf(": %d\n", p->intVal);
-		else if (strcmp(p->symbol, "FLOAT") == 0)
+		else if (STREQ(p->symbol, "FLOAT"))
 			printf(": %f\n", p->floatVal);
 		else
 			printf("\n");
@@ -57,9 +57,8 @@ void printTree(TreeNode *p, int depth)
 	else {
 		printf(" (%d)\n", p->lineno);
 		int i;
-		for (i = 0; i < p->arity; i++) {
+		for (i = 0; i < p->arity; i++) 
 			printTree(p->children[i], depth + 1);
-		}
 	}
 }
 
