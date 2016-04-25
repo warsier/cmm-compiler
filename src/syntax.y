@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	#include <string.h>
+	#include "symbol_table.h"
 	#include "syntax_tree.h"
 	#include "common.h"
 	#define YYSTYPE TreeNode* // attribute of all symbols are defined as a pointer towards TreeNode
@@ -48,6 +49,7 @@ Program : ExtDefList {
 		$$ = procTreeNode(createTreeNode(1, $1), "Program");
 		if(errorStat == false || ALWAYS_OUTPUT_TREE == 1)
 			printTree($$, 0);
+		procSymbolTable($$);
 		deleteTreeNode($$);
 	}
 	;

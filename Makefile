@@ -6,7 +6,7 @@ OBJS           = $(CFILES:.c=.o)
 TEST_FILE_LIST = $(shell find ./test -name "*.cmm")
 SRC_DIR        = ./src
 
-tree:
+all:
 	bison -d -v $(SRC_DIR)/syntax.y
 	flex $(SRC_DIR)/lexical.l
 	$(CC) $(CFILES) syntax.tab.c $(CFLAGS) -g -o parser
@@ -15,15 +15,15 @@ tree:
 testtree:
 	$(CC) ./test/test_treegen.c $(SRC_DIR)/syntax_tree.c -I./include -o out
 	
-test: tree $(TEST_FILE_LIST)
+test: all $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
 		./parser $$TEST_FILE 2>&1 | tee -a log.txt;\
 	done
 	
-gdb: tree $(TEST_FILE_LIST)
-	gdb --args ./parser ./test/06.cmm | tee -a log.txt
+gdb: all $(TEST_FILE_LIST)
+	gdb --args ./parser ./test/2.01.cmm | tee -a log.txt
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)
