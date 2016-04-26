@@ -10,10 +10,10 @@
 typedef struct Type {
 	enum { BASIC, ARRAY, STRUCTURE } kind;
 	union {
-		int basic;
+		enum { B_INT, B_FLOAT }basic; 
 		struct { struct Type *elem; int size; } array;
 		struct FieldList *structure;
-	} u;
+	};
 } Type;
 
 // one field in a structure.
@@ -25,8 +25,8 @@ typedef struct FieldList {
 
 typedef struct SymbolNode {
 	char text[MAX_LEN]; // the text of a symbol
-	bool isfunc;
-	bool vis;
+	bool isfunc; // the symbol is a function or a variable
+	bool isdef; // this symbol is a definition or a declaration (we don't need to consider extern variables, so isdef is always true for variables)
 	int lineno;
 	union {
 		struct {
@@ -47,7 +47,10 @@ typedef struct SymbolStackNode {
 
 unsigned int hashSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);
+void clearSymbolStack();
 void procExtDef(TreeNode *p);
+void procDef(TreeNode *p);
+void procVarDec(Type nodetype, TreeNode *p);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 

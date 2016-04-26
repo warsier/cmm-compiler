@@ -72,47 +72,97 @@ void clearSymbolStack()
 	 
 }
 
+// ExtDef -> Specifier ExtDecList SEMI 
+//         | Specifier SEMI
+//         | Specifier FunDec CompSt
 void procExtDef(TreeNode *p)
 {
 	if (STREQ(p->children[1]->symbol, "ExtDecList")) {
-		printf("ExtDecList\n");
 	}
 	else if (STREQ(p->children[1]->symbol, "FunDec")) {
-		printf("FunDec\n");
 		buildSymbolTable(p->children[2]);
 	}
 }
+
+// Def -> Specifier Dec COMMA Dec COMMA Dec ... SEMI
+// Dec -> VarDec
+//      | VarDec AssignOP Exp
+void procDef(TreeNode *p)
+{
+	// Specifier can be TYPE or StructSpecifier
+	TreeNode *spec = p->children[0]->children[0];
+	Type nodetype;
+	if (STREQ(spec->symbol, "TYPE")) {
+		nodetype.kind = BASIC;
+		if (STREQ(spec->text, "INT")) nodetype.basic = B_INT;
+		else nodetype.basic = B_FLOAT;
+	}
+	else {
+		// implement structure later
+		assert(0);
+	}
+	TreeNode *temp = p->children[1];
+	while (!STREQ(temp->symbol, "DecList")) {
+		procVarDec(nodetype, temp->children[0]->children[0]);
+		temp = temp->children[2];
+	}
+	procVarDec(nodetype, temp->children[0]->children[0]);
+}
+
+// VarDec -> ID
+//         | VarDec LB INT RB
+void procVarDec(Type nodetype, TreeNode *p)
+{
+	if (p->arity == 1) {
+		SymbolNode *newnode = pushinSymbol(p->children[0]->text);
+		strcpy(newnode->text, p->children[0]->text);
+		newnode->isfunc = false, newnode->isdef = true;
+		newnode->lineno = p->children[0]->lineno;
+		newnode->VarMsg = nodetype;
+	}
+	else {
+		// implement array later
+		assert(0);
+	}
+}
+
+
 
 void buildSymbolTable(TreeNode *p)
 {
 	if (STREQ(p->symbol, "ExtDef")) {
 		// if it is a global definition (can be a function or a variable)
-		printf("ExtDef\n");
 		procExtDef(p);
 	}
-	else if (STREQ(p->symbol, "Def")) {
+	if (STREQ(p->symbol, "Def")) {
 		// if it is a local variable definition
-		printf("Def\n");
+		procDef(p);
 	}
-	else if (STREQ(p->symbol, "Exp")) {
+	if (STREQ(p->symbol, "Exp")) {
 		// if it is a variable use or function call
-		printf("Exp\n");
 	}
-	else if (STREQ(p->symbol, "LC")) {
-		printf("LC\n");
+	if (STREQ(p->symbol, "LC")) {
+		// push a new field into the stack
 		SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
 		newstacknode->next = SymbolStackHead;
 		SymbolStackHead = newstacknode;
-		
+		SymbolStackHead->SymbolHead = NULL;
 	}
-	else if (STREQ(p->symbol, "RC")) {
-		printf("RC\n");
+	if (STREQ(p->symbol, "RC")) {
+		// pop out the field at the top of the stack
+		SymbolStackNode *nodetodelete = SymbolStackHead;
+		SymbolStackHead = SymbolStackHead->next;
+		while (nodetodelete->SymbolHead != NULL) {
+			SymbolNode *temp = nodetodelete->SymbolHead;
+			nodetodelete->SymbolHead = nodetodelete->SymbolHead->StackNext;
+			free(temp);
+		}
+		free(nodetodelete);
 	}
-	else {
-		int i;
-		for (i = 0; i < p->arity; i++)
-			buildSymbolTable(p->children[i]);
-	}
+	int i;
+	for (i = 0; i < p->arity; i++)
+		buildSymbolTable(p->children[i]);
+
 }
 
 
