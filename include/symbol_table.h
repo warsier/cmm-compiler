@@ -37,7 +37,7 @@ typedef struct SymbolNode {
 	};
 	
 	struct SymbolStackNode *toHead;
-	struct SymbolNode *Stacknext, *Hashnext;
+	struct SymbolNode *StackNext, *HashNext;
 } SymbolNode;
 
 typedef struct SymbolStackNode {
@@ -45,7 +45,8 @@ typedef struct SymbolStackNode {
 	struct SymbolStackNode *next;
 } SymbolStackNode;
 
-unsigned int hashSymbol(char *name);
+unsigned int hashSymbol(const char *name);
+SymbolNode *pushinSymbol(const char *name);
 void procExtDef(TreeNode *p);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);

@@ -9,7 +9,7 @@
 SymbolNode *HashTable[HASH_MASK];
 SymbolStackNode *SymbolStackHead = NULL;
 
-unsigned int hashSymbol(char *name)
+unsigned int hashSymbol(const char *name)
 {
 	unsigned int val = 0, i;
 	for (; *name; name++) {
@@ -20,6 +20,40 @@ unsigned int hashSymbol(char *name)
 	return val;
 }
 
+// Given the symbol name, return an empty SymbolNode generated at the correct position.
+SymbolNode *pushinSymbol(const char *name)
+{
+	SymbolNode *hashslot = HashTable[hashSymbol(name)]; // generate the hash slot
+	SymbolNode *stackslot = SymbolStackHead->SymbolHead;
+	SymbolNode *newnode = (SymbolNode *) malloc(sizeof(SymbolNode));
+	
+	if (hashslot == NULL) {
+		hashslot = newnode;
+		newnode->HashNext = NULL;
+	}
+	else {
+		newnode->HashNext = hashslot;
+		hashslot = newnode;
+	}
+	
+	if (stackslot == NULL) {
+		stackslot = newnode;
+		newnode->StackNext = NULL;
+	}
+	else {
+		newnode->StackNext = stackslot;
+		stackslot = newnode;
+	}
+	
+	newnode->toHead = SymbolStackHead;
+	
+	// remember that we did not modify the original pointer
+	HashTable[hashSymbol(name)] = hashslot;
+	SymbolStackHead->SymbolHead = stackslot;
+	
+	return newnode;
+}
+
 void clearSymbolStack()
 {
 	while (SymbolStackHead != NULL) {
@@ -27,11 +61,14 @@ void clearSymbolStack()
 		SymbolStackHead = SymbolStackHead->next;
 		while (p->SymbolHead != NULL) {
 			SymbolNode *q = p->SymbolHead;
-			p->SymbolHead = p->SymbolHead->Stacknext;
+			p->SymbolHead = p->SymbolHead->StackNext;
 			free(q);
 		}
 		free(p);
 	}
+	int i;
+	for (i = 0; i < HASH_MASK; i++)
+		HashTable[i] = NULL;
 	 
 }
 
@@ -63,6 +100,10 @@ void buildSymbolTable(TreeNode *p)
 	}
 	else if (STREQ(p->symbol, "LC")) {
 		printf("LC\n");
+		SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
+		newstacknode->next = SymbolStackHead;
+		SymbolStackHead = newstacknode;
+		
 	}
 	else if (STREQ(p->symbol, "RC")) {
 		printf("RC\n");
@@ -78,6 +119,9 @@ void buildSymbolTable(TreeNode *p)
 void procSymbolTable(TreeNode *p)
 {
 	clearSymbolStack();
+	SymbolStackHead = (SymbolStackNode *) malloc(sizeof(SymbolStackNode)); // global symbol table
+	SymbolStackHead->next = NULL;
+	SymbolStackHead->SymbolHead = NULL;
 	buildSymbolTable(p);
 	printf("ohhhhhhh!%s\n", p->text);
 	clearSymbolStack();
