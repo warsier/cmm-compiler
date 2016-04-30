@@ -20,6 +20,16 @@ unsigned int hashSymbol(const char *name)
 	return val;
 }
 
+bool searchSymbol(const char *name)
+{
+	SymbolNode *temp = HashTable[hashSymbol(name)]; // generate the hash slot
+	for (; temp != NULL; temp = temp->HashNext) {
+		if (temp->toHead == SymbolStackHead && STREQ(temp->text, name))
+			return true;
+	}
+	return false;
+}
+
 // Given the symbol name, return an empty SymbolNode generated at the correct position.
 SymbolNode *pushinSymbol(const char *name)
 {
@@ -126,6 +136,19 @@ void procVarDec(Type nodetype, TreeNode *p)
 	}
 }
 
+void procExp(TreeNode *p)
+{
+	int i;
+	for (i = 0; i < p->arity; i++) {
+		if (p->arity == 1 && STREQ(p->children[i]->symbol, "ID")) {
+			if(!searchSymbol(p->children[i]->text))
+				printf("Error type 1 at line %d: Undefined variable \"%s\"\n", p->children[i]->lineno, p->children[i]->text);
+		}
+		if (p->arity > 1 && STREQ(p->children[i]->symbol, "Exp"))
+			procExp(p->children[i]);
+	}
+}
+
 
 
 void buildSymbolTable(TreeNode *p)
@@ -133,13 +156,17 @@ void buildSymbolTable(TreeNode *p)
 	if (STREQ(p->symbol, "ExtDef")) {
 		// if it is a global definition (can be a function or a variable)
 		procExtDef(p);
+		return;
 	}
 	if (STREQ(p->symbol, "Def")) {
 		// if it is a local variable definition
 		procDef(p);
+		return;
 	}
 	if (STREQ(p->symbol, "Exp")) {
 		// if it is a variable use or function call
+		procExp(p);
+		return;
 	}
 	if (STREQ(p->symbol, "LC")) {
 		// push a new field into the stack
