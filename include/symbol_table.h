@@ -36,7 +36,6 @@ typedef struct SymbolNode {
 		Type VarMsg; // if the symbol is basic type/array/struct
 	};
 	
-	struct SymbolStackNode *toHead;
 	struct SymbolNode *StackNext, *HashNext;
 } SymbolNode;
 
@@ -45,12 +44,14 @@ typedef struct SymbolStackNode {
 	struct SymbolStackNode *next;
 } SymbolStackNode;
 
+void symbolErrorMsg(char ErrorType, TreeNode *p);
 unsigned int hashSymbol(const char *name);
 bool searchSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);
 void clearSymbolStack();
 void procExtDef(TreeNode *p);
 void procDef(TreeNode *p);
+Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
 void procExp(TreeNode *p);
 void buildSymbolTable(TreeNode *p);

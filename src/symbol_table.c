@@ -9,6 +9,13 @@
 SymbolNode *HashTable[HASH_MASK];
 SymbolStackNode *SymbolStackHead = NULL;
 
+void symbolErrorMsg(char ErrorType, TreeNode *p)
+{
+	switch(ErrorType) {
+	case '1': printf("Error type 1 at line %d: Undefined variable \"%s\".\n", p->lineno, p->text); break;
+	}
+}
+
 unsigned int hashSymbol(const char *name)
 {
 	unsigned int val = 0, i;
@@ -24,7 +31,7 @@ bool searchSymbol(const char *name)
 {
 	SymbolNode *temp = HashTable[hashSymbol(name)]; // generate the hash slot
 	for (; temp != NULL; temp = temp->HashNext) {
-		if (temp->toHead == SymbolStackHead && STREQ(temp->text, name))
+		if (STREQ(temp->text, name))
 			return true;
 	}
 	return false;
@@ -55,8 +62,6 @@ SymbolNode *pushinSymbol(const char *name)
 		stackslot = newnode;
 	}
 	
-	newnode->toHead = SymbolStackHead;
-	
 	// remember that we did not modify the original pointer
 	HashTable[hashSymbol(name)] = hashslot;
 	SymbolStackHead->SymbolHead = stackslot;
@@ -82,41 +87,63 @@ void clearSymbolStack()
 	 
 }
 
-// ExtDef -> Specifier ExtDecList SEMI 
-//         | Specifier SEMI
-//         | Specifier FunDec CompSt
+// ExtDef -> Specifier ExtDecList SEMI (global variable definition)
+//         | Specifier SEMI            (global structure definition)
+//         | Specifier FunDec CompSt   (function definition)
+// ExtDecList -> VarDec
+//             | VarDec COMMA ExtDecList
+// CompSt -> LC DefList StmtList RC
 void procExtDef(TreeNode *p)
 {
 	if (STREQ(p->children[1]->symbol, "ExtDecList")) {
+		Type nodetype = procSpecifier(p->children[0]);
+		TreeNode *temp = p->children[1];
+		while (temp->arity > 1) {
+			procVarDec(nodetype, temp->children[0]);
+			temp = temp->children[2];
+		}
+		procVarDec(nodetype, temp->children[0]);
 	}
 	else if (STREQ(p->children[1]->symbol, "FunDec")) {
 		buildSymbolTable(p->children[2]);
 	}
+	else {
+		assert(0);
+	}
 }
 
-// Def -> Specifier Dec COMMA Dec COMMA Dec ... SEMI
+// Def -> Specifier DecList SEMI
+// DecList -> Dec
+//          | Dec COMMA DecList
 // Dec -> VarDec
 //      | VarDec AssignOP Exp
 void procDef(TreeNode *p)
 {
 	// Specifier can be TYPE or StructSpecifier
-	TreeNode *spec = p->children[0]->children[0];
+	Type nodetype = procSpecifier(p->children[0]);
+	TreeNode *temp = p->children[1];
+	while (temp->arity > 1) {
+		procVarDec(nodetype, temp->children[0]->children[0]);
+		temp = temp->children[2];
+	}
+	procVarDec(nodetype, temp->children[0]->children[0]);
+}
+
+// Specifier -> TYPE 
+//            | StructSpecifier
+Type procSpecifier(TreeNode *p)
+{
 	Type nodetype;
-	if (STREQ(spec->symbol, "TYPE")) {
+	if (STREQ(p->children[0]->symbol, "TYPE")) {
 		nodetype.kind = BASIC;
-		if (STREQ(spec->text, "INT")) nodetype.basic = B_INT;
+		if (STREQ(p->children[0]->text, "INT")) nodetype.basic = B_INT;
 		else nodetype.basic = B_FLOAT;
 	}
 	else {
 		// implement structure later
 		assert(0);
 	}
-	TreeNode *temp = p->children[1];
-	while (!STREQ(temp->symbol, "DecList")) {
-		procVarDec(nodetype, temp->children[0]->children[0]);
-		temp = temp->children[2];
-	}
-	procVarDec(nodetype, temp->children[0]->children[0]);
+	return nodetype;
 }
 
 // VarDec -> ID
@@ -142,7 +169,7 @@ void procExp(TreeNode *p)
 	for (i = 0; i < p->arity; i++) {
 		if (p->arity == 1 && STREQ(p->children[i]->symbol, "ID")) {
 			if(!searchSymbol(p->children[i]->text))
-				printf("Error type 1 at line %d: Undefined variable \"%s\"\n", p->children[i]->lineno, p->children[i]->text);
+				symbolErrorMsg('1', p->children[i]);
 		}
 		if (p->arity > 1 && STREQ(p->children[i]->symbol, "Exp"))
 			procExp(p->children[i]);
