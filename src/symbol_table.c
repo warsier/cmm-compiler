@@ -14,6 +14,7 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	switch(ErrorType) {
 	case '1': printf("Error type 1 at line %d: Undefined variable \"%s\".\n", p->lineno, p->text); break;
 	case '2': printf("Error type 2 at line %d: Undefined function \"%s\".\n", p->lineno, p->text); break;
+	case '3': printf("Error type 3 at line %d: Redefined variable \"%s\".\n", p->lineno, p->text); break;
 	}
 }
 
@@ -194,6 +195,9 @@ Type procSpecifier(TreeNode *p)
 void procVarDec(Type nodetype, TreeNode *p)
 {
 	if (p->arity == 1) {
+		if (searchSymbol(p->children[0]->text)) {
+			symbolErrorMsg('3', p->children[0]);
+		}
 		SymbolNode *newnode = pushinSymbol(p->children[0]->text);
 		strcpy(newnode->text, p->children[0]->text);
 		newnode->isfunc = false, newnode->isdef = true;
@@ -220,7 +224,7 @@ void procExp(TreeNode *p)
 		return;
 	}
 	for (i = 0; i < p->arity; i++) {
-		if (p->arity > 1 && STREQ(p->children[i]->symbol, "Exp"))
+		if (p->arity > i && STREQ(p->children[i]->symbol, "Exp"))
 			procExp(p->children[i]);
 	}
 }
