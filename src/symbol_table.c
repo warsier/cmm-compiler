@@ -13,6 +13,7 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 {
 	switch(ErrorType) {
 	case '1': printf("Error type 1 at line %d: Undefined variable \"%s\".\n", p->lineno, p->text); break;
+	case '2': printf("Error type 2 at line %d: Undefined function \"%s\".\n", p->lineno, p->text); break;
 	}
 }
 
@@ -75,9 +76,11 @@ void clearSymbolStack()
 		SymbolStackNode *p = SymbolStackHead;
 		SymbolStackHead = SymbolStackHead->next;
 		while (p->SymbolHead != NULL) {
-			SymbolNode *q = p->SymbolHead;
+			SymbolNode *temp = p->SymbolHead;
+			if (temp->isfunc && temp->FuncMsg.ArgNum > 0)
+				free(temp->FuncMsg.ArgType);
 			p->SymbolHead = p->SymbolHead->StackNext;
-			free(q);
+			free(temp);
 		}
 		free(p);
 	}
@@ -105,7 +108,47 @@ void procExtDef(TreeNode *p)
 		procVarDec(nodetype, temp->children[0]);
 	}
 	else if (STREQ(p->children[1]->symbol, "FunDec")) {
+		Type nodetype = procSpecifier(p->children[0]);
+		procFunDec(nodetype, p->children[1]);
 		buildSymbolTable(p->children[2]);
+	}
+	else {
+		assert(0);
+	}
+}
+
+// FunDec -> ID LP VarList RP
+//         | ID LP RP
+// VarList -> ParamDec COMMA VarList
+//          | ParamDec
+// ParamDec -> Specifier VarDec
+void procFunDec(Type nodetype, TreeNode *p)
+{
+	SymbolNode *newnode = pushinSymbol(p->children[0]->text);
+	strcpy(newnode->text, p->children[0]->text);
+	newnode->isfunc = true, newnode->isdef = true;
+	newnode->lineno = p->children[0]->lineno;
+	newnode->FuncMsg.RetValType = nodetype;
+	if (p->arity == 4) {
+		int cnt = 1;
+		TreeNode *temp = p->children[2];
+		while (temp->arity > 1) {
+			cnt++;
+			temp = temp->children[2];
+		}
+		newnode->FuncMsg.ArgNum = cnt;
+		newnode->FuncMsg.ArgType = (Type *) malloc(sizeof(Type) * cnt);
+		cnt = 0;
+		temp = p->children[2];
+		while (temp->arity > 1) {
+			newnode->FuncMsg.ArgType[cnt] = procSpecifier(temp->children[0]->children[0]);
+			cnt++;
+			temp = temp->children[2];
+		}
+	}
+	else if (p->arity == 3) {
+		newnode->FuncMsg.ArgNum = 0;
+		newnode->FuncMsg.ArgType = NULL; 
 	}
 	else {
 		assert(0);
@@ -166,11 +209,17 @@ void procVarDec(Type nodetype, TreeNode *p)
 void procExp(TreeNode *p)
 {
 	int i;
+	if (p->arity == 1 && STREQ(p->children[0]->symbol, "ID")) {
+		if(!searchSymbol(p->children[0]->text))
+			symbolErrorMsg('1', p->children[0]);
+		return;
+	}
+	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
+		if (!searchSymbol(p->children[0]->text))
+			symbolErrorMsg('2', p->children[0]);
+		return;
+	}
 	for (i = 0; i < p->arity; i++) {
-		if (p->arity == 1 && STREQ(p->children[i]->symbol, "ID")) {
-			if(!searchSymbol(p->children[i]->text))
-				symbolErrorMsg('1', p->children[i]);
-		}
 		if (p->arity > 1 && STREQ(p->children[i]->symbol, "Exp"))
 			procExp(p->children[i]);
 	}
@@ -208,6 +257,8 @@ void buildSymbolTable(TreeNode *p)
 		SymbolStackHead = SymbolStackHead->next;
 		while (nodetodelete->SymbolHead != NULL) {
 			SymbolNode *temp = nodetodelete->SymbolHead;
+			if (temp->isfunc && temp->FuncMsg.ArgNum > 0)
+				free(temp->FuncMsg.ArgType);
 			nodetodelete->SymbolHead = nodetodelete->SymbolHead->StackNext;
 			free(temp);
 		}

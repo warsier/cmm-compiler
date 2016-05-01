@@ -31,7 +31,8 @@ typedef struct SymbolNode {
 	union {
 		struct {
 			Type RetValType; // type of return value
-			Type ArgType; // type of function argument
+			int ArgNum;
+			Type *ArgType; // type of function argument
 		} FuncMsg; // if the symbol is a function
 		Type VarMsg; // if the symbol is basic type/array/struct
 	};
@@ -50,6 +51,7 @@ bool searchSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);
 void clearSymbolStack();
 void procExtDef(TreeNode *p);
+void procFunDec(Type nodetype, TreeNode *p);
 void procDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
