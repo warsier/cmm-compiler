@@ -96,7 +96,7 @@ void clearSymbolStack()
 //         | Specifier FunDec CompSt   (function definition)
 // ExtDecList -> VarDec
 //             | VarDec COMMA ExtDecList
-// CompSt -> LC DefList StmtList RC
+// CompSt -> LC DefList StmtList RC (DefList and StmtList can be empty)
 void procExtDef(TreeNode *p)
 {
 	if (STREQ(p->children[1]->symbol, "ExtDecList")) {
@@ -111,7 +111,9 @@ void procExtDef(TreeNode *p)
 	else if (STREQ(p->children[1]->symbol, "FunDec")) {
 		Type nodetype = procSpecifier(p->children[0]);
 		procFunDec(nodetype, p->children[1]);
-		buildSymbolTable(p->children[2]);
+		int i;
+		for (i = 1; i < p->children[2]->arity; i++)
+			buildSymbolTable(p->children[2]->children[i]);
 	}
 	else {
 		assert(0);
@@ -130,6 +132,13 @@ void procFunDec(Type nodetype, TreeNode *p)
 	newnode->isfunc = true, newnode->isdef = true;
 	newnode->lineno = p->children[0]->lineno;
 	newnode->FuncMsg.RetValType = nodetype;
+	
+	// push a new field into the stack
+	SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
+	newstacknode->next = SymbolStackHead;
+	SymbolStackHead = newstacknode;
+	SymbolStackHead->SymbolHead = NULL;
+	
 	if (p->arity == 4) {
 		int cnt = 1;
 		TreeNode *temp = p->children[2];
@@ -142,10 +151,16 @@ void procFunDec(Type nodetype, TreeNode *p)
 		cnt = 0;
 		temp = p->children[2];
 		while (temp->arity > 1) {
-			newnode->FuncMsg.ArgType[cnt] = procSpecifier(temp->children[0]->children[0]);
+			Type newnodetype = procSpecifier(temp->children[0]->children[0]);
+			procVarDec(newnodetype, temp->children[0]->children[1]);
+			newnode->FuncMsg.ArgType[cnt] = newnodetype;
 			cnt++;
 			temp = temp->children[2];
 		}
+		Type newnodetype = procSpecifier(temp->children[0]->children[0]);
+		procVarDec(newnodetype, temp->children[0]->children[1]);
+		newnode->FuncMsg.ArgType[cnt] = newnodetype;
+		cnt++;
 	}
 	else if (p->arity == 3) {
 		newnode->FuncMsg.ArgNum = 0;

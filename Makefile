@@ -24,7 +24,7 @@ test: all $(TEST_FILE_LIST)
 	
 gdb: all $(TEST_FILE_LIST)
 	@rm -f log.txt
-	gdb --args ./parser ./test/2.03.cmm | tee -a log.txt
+	gdb --args ./parser ./test/2.04.cmm | tee -a log.txt
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)
