@@ -34,7 +34,7 @@ typedef struct SymbolNode {
 			int ArgNum;
 			Type *ArgType; // type of function argument
 		} FuncMsg; // if the symbol is a function
-		Type VarMsg; // if the symbol is basic type/array/struct
+		Type *VarMsg; // if the symbol is basic type/array/struct
 	};
 	
 	struct SymbolNode *StackNext, *HashNext;
@@ -48,6 +48,7 @@ typedef struct SymbolStackNode {
 
 void symbolErrorMsg(char ErrorType, TreeNode *p);
 void printType(Type t, char *str);
+void deleteType(Type *t);
 unsigned int hashSymbol(const char *name);
 SymbolNode *searchSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);

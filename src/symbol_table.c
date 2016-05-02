@@ -21,6 +21,9 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case '7': printf("Error type 7 at line %d: Type mismatched for operands.\n", p->lineno); break;
 	case '8': printf("Error type 8 at line %d: Type mismatched for return.\n", p->lineno); break;
 	case '9': printf("Error type 9 at line %d: ", p->lineno); break;
+	case 'a': printf("Error type 10 at line %d: \"%s\" is not an array.\n", p->lineno, p->text); break;
+	case 'b': printf("Error type 11 at line %d: \"%s\" is not a function.\n", p->lineno, p->text); break;
+	case 'c': printf("Error type 12 at line %d: \"%s\" is not an integer.\n", p->lineno, p->text); break;
 	}
 }
 
@@ -31,6 +34,25 @@ void printType(Type t, char *str)
 		else strcpy(str, "float\0");
 	}
 	else {
+		assert(0);
+	}
+}
+
+void deleteType(Type *t)
+{
+	Type *temp = t;
+	if (t->kind == BASIC) {
+		free(t);
+	}
+	if (t->kind == ARRAY) {
+		while (t->kind != BASIC) {
+			t = t->array.elem;
+			free(temp);
+			temp = t;
+		}
+		free(t);
+	}
+	if (t->kind == STRUCTURE) {
 		assert(0);
 	}
 }
@@ -250,16 +272,38 @@ void procVarDec(Type nodetype, TreeNode *p)
 	if (p->arity == 1) {
 		if (searchSymbol(p->children[0]->text) != NULL) {
 			symbolErrorMsg('3', p->children[0]);
+			return;
 		}
 		SymbolNode *newnode = pushinSymbol(p->children[0]->text);
 		strcpy(newnode->text, p->children[0]->text);
 		newnode->isfunc = false, newnode->isdef = true;
 		newnode->lineno = p->children[0]->lineno;
-		newnode->VarMsg = nodetype;
+		newnode->VarMsg = (Type *) malloc(sizeof(Type));
+		newnode->VarMsg->kind = BASIC;
+		newnode->VarMsg->basic = nodetype.basic;
 	}
 	else {
-		// implement array later
-		assert(0);
+		TreeNode *temp = p;
+		Type *arrayhead = (Type *) malloc(sizeof(Type));
+		arrayhead->kind = BASIC;
+		arrayhead->basic = nodetype.basic;
+		while (temp->arity > 1) {
+			Type *arraytemp = (Type *) malloc(sizeof(Type));
+			arraytemp->kind = ARRAY;
+			arraytemp->array.size = temp->children[2]->intVal;
+			arraytemp->array.elem = arrayhead;
+			arrayhead = arraytemp;
+			temp = temp->children[0];
+		}
+		if (searchSymbol(temp->children[0]->text) != NULL) {
+			symbolErrorMsg('3', temp->children[0]);
+			return;
+		}
+		SymbolNode *newnode = pushinSymbol(temp->children[0]->text);
+		strcpy(newnode->text, temp->children[0]->text);
+		newnode->isfunc = false, newnode->isdef = true;
+		newnode->lineno = p->children[0]->lineno;
+		newnode->VarMsg = arrayhead;
 	}
 }
 
@@ -296,7 +340,7 @@ Type procExp(TreeNode *p)
 				retval.kind = NOTDEF;
 				return retval;
 			}
-			retval = symboltemp->VarMsg;
+			retval = *symboltemp->VarMsg;
 			return retval;
 		}
 		else if (STREQ(p->children[0]->symbol, "INT")) {
@@ -310,6 +354,35 @@ Type procExp(TreeNode *p)
 		return retval;
 	}
 	
+	// array
+	if (p->arity > 2 && STREQ(p->children[1]->symbol, "LB")) {
+		TreeNode *temp = p;
+		while (temp->arity > 1)
+			temp = temp->children[0];
+		SymbolNode *symboltemp = searchSymbol(temp->children[0]->text);
+		if(symboltemp == NULL) {
+			symbolErrorMsg('1', p->children[0]);
+			retval.kind = NOTDEF;
+			return retval;
+		}
+		else if (symboltemp->VarMsg->kind != ARRAY) {
+			symbolErrorMsg('a', temp->children[0]);
+			retval.kind = NOTDEF;
+			return retval;
+		}
+		temp = p;
+		while (temp->arity > 1) {
+			Type inttemp;
+			inttemp.kind = BASIC, inttemp.basic = B_INT;
+			if (TypeEQ(procExp(temp->children[2]), inttemp) == 0) {
+				symbolErrorMsg('c', temp->children[2]->children[0]);
+				retval.kind = NOTDEF;
+				return retval;
+			}
+			temp = temp->children[0];
+		}
+	}
+	
 	// function
 	// Exp -> ID LP Args RP
 	//      | ID LP RP
@@ -317,8 +390,10 @@ Type procExp(TreeNode *p)
 	//       | Exp
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
 		SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
-		if (symboltemp == NULL || symboltemp->isfunc == false) 
+		if (symboltemp == NULL) 
 			symbolErrorMsg('2', p->children[0]);
+		else if (symboltemp->isfunc == false)
+			symbolErrorMsg('b', p->children[0]);
 		else {
 			int cnt = 1;
 			TreeNode *argstemp = p->children[2];
@@ -376,7 +451,11 @@ Type procExp(TreeNode *p)
 		return procExp(p->children[1]);
 	}
 	if (p->arity == 3 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
-		if (!STREQ(p->children[0]->children[0]->symbol, "ID")) {
+		bool flag = false;
+		if (STREQ(p->children[0]->children[0]->symbol, "ID")) flag = true;
+		if (p->children[0]->arity > 1 && STREQ(p->children[0]->children[1]->symbol, "LB")) flag = true;
+		if (p->children[0]->arity > 1 && STREQ(p->children[0]->children[1]->symbol, "DOT")) flag = true;
+		if (!flag) {
 			symbolErrorMsg('6', p);
 			return retval;
 		}
@@ -446,7 +525,6 @@ void procSymbolTable(TreeNode *p)
 	SymbolStackHead->next = NULL;
 	SymbolStackHead->SymbolHead = NULL;
 	buildSymbolTable(p);
-	printf("ohhhhhhh!%s\n", p->text);
 	clearSymbolStack();
 }
 
@@ -469,6 +547,8 @@ void popSymbolStack()
 		SymbolNode *temp = nodetodelete->SymbolHead;
 		if (temp->isfunc && temp->FuncMsg.ArgNum > 0)
 			free(temp->FuncMsg.ArgType);
+		if (!temp->isfunc)
+			deleteType(temp->VarMsg);
 		nodetodelete->SymbolHead = nodetodelete->SymbolHead->StackNext;
 		free(temp);
 	}
