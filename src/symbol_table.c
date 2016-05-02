@@ -254,7 +254,7 @@ unsigned int procExp(TreeNode *p)
 	}
 	if (p->arity > 2 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
 		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
-		if (lval != rval) {
+		if (lval != -1 && rval != -1 && lval != rval) {
 			symbolErrorMsg('5', p);
 			return -1;
 		}
