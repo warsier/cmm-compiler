@@ -8,7 +8,7 @@
 
 // Type of c-- syntax.
 typedef struct Type {
-	enum { BASIC, ARRAY, STRUCTURE } kind;
+	enum { BASIC, ARRAY, STRUCTURE, OTHER, NOTDEF } kind;
 	union {
 		enum { B_INT = 1, B_FLOAT = 2 } basic; 
 		struct { struct Type *elem; int size; } array;
@@ -42,20 +42,23 @@ typedef struct SymbolNode {
 
 typedef struct SymbolStackNode {
 	struct SymbolNode *SymbolHead;
+	struct SymbolNode *funcptr;
 	struct SymbolStackNode *next;
 } SymbolStackNode;
 
 void symbolErrorMsg(char ErrorType, TreeNode *p);
+void printType(Type t, char *str);
 unsigned int hashSymbol(const char *name);
 SymbolNode *searchSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);
 void clearSymbolStack();
+int TypeEQ(Type lval, Type rval);
 void procExtDef(TreeNode *p);
 void procFunDec(Type nodetype, TreeNode *p);
 void procDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
-unsigned int procExp(TreeNode *p);
+Type procExp(TreeNode *p);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 void pushSymbolStack();

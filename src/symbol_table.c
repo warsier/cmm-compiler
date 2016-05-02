@@ -19,6 +19,19 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case '5': printf("Error type 5 at line %d: Type mismatched for assignment.\n", p->lineno); break;
 	case '6': printf("Error type 6 at line %d: The left-hand side of an assignment must be a variable.\n", p->lineno); break;
 	case '7': printf("Error type 7 at line %d: Type mismatched for operands.\n", p->lineno); break;
+	case '8': printf("Error type 8 at line %d: Type mismatched for return.\n", p->lineno); break;
+	case '9': printf("Error type 9 at line %d: ", p->lineno); break;
+	}
+}
+
+void printType(Type t, char *str)
+{
+	if (t.kind == BASIC) {
+		if (t.basic == B_INT) strcpy(str, "int\0");
+		else strcpy(str, "float\0");
+	}
+	else {
+		assert(0);
 	}
 }
 
@@ -95,6 +108,22 @@ void clearSymbolStack()
 	 
 }
 
+int TypeEQ(Type lval, Type rval)
+{
+	if (lval.kind == NOTDEF || rval.kind == NOTDEF) return -1;
+	if (lval.kind != rval.kind) return 0;
+	if (lval.kind == BASIC) {
+		if (lval.basic != rval.basic) return 0;
+	}
+	else if (lval.kind == ARRAY) {
+		assert(0);
+	}
+	else {
+		assert(0);
+	}
+	return 1;
+}
+
 // ExtDef -> Specifier ExtDecList SEMI (global variable definition)
 //         | Specifier SEMI            (global structure definition)
 //         | Specifier FunDec CompSt   (function definition)
@@ -146,6 +175,7 @@ void procFunDec(Type nodetype, TreeNode *p)
 	newnode->FuncMsg.RetValType = nodetype;
 	
 	pushSymbolStack();
+	SymbolStackHead->funcptr = newnode;
 	
 	if (p->arity == 4) {
 		int cnt = 1;
@@ -241,30 +271,104 @@ void procVarDec(Type nodetype, TreeNode *p)
 //       | WHILE LP Exp RP Stmt
 void procStmt(TreeNode *p)
 {
+	if (STREQ(p->children[0]->symbol, "RETURN")) {
+		SymbolStackNode *funcfield = SymbolStackHead;
+		while (funcfield != NULL && funcfield->funcptr == NULL) 
+			funcfield = funcfield->next;
+		if (funcfield != NULL && TypeEQ(funcfield->funcptr->FuncMsg.RetValType, procExp(p->children[1])) == 0)
+			symbolErrorMsg('8', p);
+	}
+	int i;
+	for (i = 0; i < p->arity; i++)
+		buildSymbolTable(p->children[i]);
 }
 
-unsigned int procExp(TreeNode *p)
+Type procExp(TreeNode *p)
 {
+	Type retval;
+	retval.kind = OTHER;
 	// single element
 	if (p->arity == 1) {
 		if (STREQ(p->children[0]->symbol, "ID")) {
 			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
 			if(symboltemp == NULL) {
 				symbolErrorMsg('1', p->children[0]);
-				return -1;
+				retval.kind = NOTDEF;
+				return retval;
 			}
-			Type nodetype = symboltemp->VarMsg;
-			return nodetype.basic;
+			retval = symboltemp->VarMsg;
+			return retval;
 		}
-		else if (STREQ(p->children[0]->symbol, "INT")) return 1;
-		else return 2;
+		else if (STREQ(p->children[0]->symbol, "INT")) {
+			retval.kind = BASIC;
+			retval.basic = B_INT;
+		}
+		else {
+			retval.kind = BASIC;
+			retval.basic = B_FLOAT;
+		}
+		return retval;
 	}
 	
 	// function
+	// Exp -> ID LP Args RP
+	//      | ID LP RP
+	// Args -> Exp COMMA Args
+	//       | Exp
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
-		if (searchSymbol(p->children[0]->text) == NULL)
+		SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
+		if (symboltemp == NULL || symboltemp->isfunc == false) 
 			symbolErrorMsg('2', p->children[0]);
-		return -1;
+		else {
+			int cnt = 1;
+			TreeNode *argstemp = p->children[2];
+			while (argstemp->arity > 1) {
+				cnt++;
+				argstemp = argstemp->children[2];
+			}
+			Type *call = (Type *) malloc(sizeof(Type) * cnt);
+			cnt = 0;
+			argstemp = p->children[2];
+			while (argstemp->arity > 1) {
+				call[cnt] = procExp(argstemp->children[0]);
+				cnt++;
+				argstemp = argstemp->children[2];
+			}
+			call[cnt] = procExp(argstemp->children[0]);
+			cnt++;
+			bool flag = true;
+			if (cnt != symboltemp->FuncMsg.ArgNum)
+				flag = false;
+			else {
+				int i;
+				for (i = 0; i < cnt; i++)
+					if (TypeEQ(call[cnt], symboltemp->FuncMsg.ArgType[cnt]) == 0) {
+						flag = false;
+						break;
+					}
+			}
+			if (!flag) {
+				symbolErrorMsg('9', p);
+				printf("Function \"%s(", symboltemp->text);
+				int i;
+				char str[40];
+				for (i = 0; i < symboltemp->FuncMsg.ArgNum - 1; i++) {
+					printType(symboltemp->FuncMsg.ArgType[i], str);
+					printf("%s, ", str);
+				}
+				printType(symboltemp->FuncMsg.ArgType[i], str);
+				printf("%s", str);
+				printf(")\" is not applicable for arguments \"(");
+				for (i = 0; i < cnt - 1; i++) {
+					printType(call[i], str);
+					printf("%s, ", str);
+				}
+				printType(call[i], str);
+				printf("%s)".\n", str);
+			}
+			free(call);
+		}
+		return retval;
 	}
 	
 	// three elements
@@ -272,27 +376,29 @@ unsigned int procExp(TreeNode *p)
 		return procExp(p->children[1]);
 	}
 	if (p->arity == 3 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
-		if (!STREQ(p->children[0]->children[0]->symbol, "ID"))
+		if (!STREQ(p->children[0]->children[0]->symbol, "ID")) {
 			symbolErrorMsg('6', p);
-		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
-		if (lval != -1 && rval != -1 && lval != rval) {
+			return retval;
+		}
+		Type lval = procExp(p->children[0]), rval = procExp(p->children[2]);
+		if (TypeEQ(lval, rval) == 0) {
 			symbolErrorMsg('5', p);
-			return -1;
+			return retval;
 		}
 		return lval;
 	}
 	if (p->arity == 3) {
-		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
-		if (lval != -1 && rval != -1 && lval != rval) {
+		Type lval = procExp(p->children[0]), rval = procExp(p->children[2]);	
+		if (TypeEQ(lval, rval) == 0) {
 			symbolErrorMsg('7', p);
-			return -1;
+			return retval;
 		}
 		return lval;
 	}
-	int i, retval = 0;
+	int i;
 	for (i = 0; i < p->arity; i++) {
 		if (p->arity > i && STREQ(p->children[i]->symbol, "Exp"))
-			retval |= procExp(p->children[i]);
+			procExp(p->children[i]);
 	}
 	return retval;
 }
@@ -307,6 +413,11 @@ void buildSymbolTable(TreeNode *p)
 	if (STREQ(p->symbol, "Def")) {
 		// if it is a local variable definition
 		procDef(p);
+		return;
+	}
+	if (STREQ(p->symbol, "Stmt")) {
+		// if it is a local variable definition
+		procStmt(p);
 		return;
 	}
 	if (STREQ(p->symbol, "Exp")) {
@@ -326,11 +437,12 @@ void buildSymbolTable(TreeNode *p)
 
 }
 
-
+// the entrance
 void procSymbolTable(TreeNode *p)
 {
 	clearSymbolStack();
 	SymbolStackHead = (SymbolStackNode *) malloc(sizeof(SymbolStackNode)); // global symbol table
+	SymbolStackHead->funcptr = NULL;
 	SymbolStackHead->next = NULL;
 	SymbolStackHead->SymbolHead = NULL;
 	buildSymbolTable(p);
@@ -344,6 +456,7 @@ void pushSymbolStack()
 	SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
 	newstacknode->next = SymbolStackHead;
 	SymbolStackHead = newstacknode;
+	SymbolStackHead->funcptr = NULL;
 	SymbolStackHead->SymbolHead = NULL;
 }
 
