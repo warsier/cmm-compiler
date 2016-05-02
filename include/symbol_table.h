@@ -10,7 +10,7 @@
 typedef struct Type {
 	enum { BASIC, ARRAY, STRUCTURE } kind;
 	union {
-		enum { B_INT, B_FLOAT }basic; 
+		enum { B_INT = 1, B_FLOAT = 2 } basic; 
 		struct { struct Type *elem; int size; } array;
 		struct FieldList *structure;
 	};
@@ -55,7 +55,7 @@ void procFunDec(Type nodetype, TreeNode *p);
 void procDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
-void procExp(TreeNode *p);
+unsigned int procExp(TreeNode *p);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 void pushSymbolStack();

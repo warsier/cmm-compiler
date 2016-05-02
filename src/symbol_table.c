@@ -16,6 +16,7 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case '2': printf("Error type 2 at line %d: Undefined function \"%s\".\n", p->lineno, p->text); break;
 	case '3': printf("Error type 3 at line %d: Redefined variable \"%s\".\n", p->lineno, p->text); break;
 	case '4': printf("Error type 4 at line %d: Redefined function \"%s\".\n", p->lineno, p->text); break;
+	case '5': printf("Error type 5 at line %d: Type mismatched for assignment.\n", p->lineno); break;
 	}
 }
 
@@ -200,7 +201,7 @@ Type procSpecifier(TreeNode *p)
 	Type nodetype;
 	if (STREQ(p->children[0]->symbol, "TYPE")) {
 		nodetype.kind = BASIC;
-		if (STREQ(p->children[0]->text, "INT")) nodetype.basic = B_INT;
+		if (STREQ(p->children[0]->text, "int")) nodetype.basic = B_INT;
 		else nodetype.basic = B_FLOAT;
 	}
 	else {
@@ -230,26 +231,42 @@ void procVarDec(Type nodetype, TreeNode *p)
 	}
 }
 
-void procExp(TreeNode *p)
+unsigned int procExp(TreeNode *p)
 {
-	int i;
-	if (p->arity == 1 && STREQ(p->children[0]->symbol, "ID")) {
-		if(searchSymbol(p->children[0]->text) == NULL)
-			symbolErrorMsg('1', p->children[0]);
-		return;
+	if (p->arity == 1) {
+		if (STREQ(p->children[0]->symbol, "ID")) {
+			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
+			if(symboltemp == NULL) {
+				symbolErrorMsg('1', p->children[0]);
+				return -1;
+			}
+			Type nodetype = symboltemp->VarMsg;
+			return nodetype.basic;
+		}
+		else if (STREQ(p->children[0]->symbol, "INT")) return 1;
+		else return 2;
 	}
+	
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
 		if (searchSymbol(p->children[0]->text) == NULL)
 			symbolErrorMsg('2', p->children[0]);
-		return;
+		return -1;
 	}
+	if (p->arity > 2 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
+		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
+		if (lval != rval) {
+			symbolErrorMsg('5', p);
+			return -1;
+		}
+		return lval;
+	}
+	int i, retval = 0;
 	for (i = 0; i < p->arity; i++) {
 		if (p->arity > i && STREQ(p->children[i]->symbol, "Exp"))
-			procExp(p->children[i]);
+			retval |= procExp(p->children[i]);
 	}
+	return retval;
 }
-
-
 
 void buildSymbolTable(TreeNode *p)
 {
