@@ -47,7 +47,7 @@ typedef struct SymbolStackNode {
 
 void symbolErrorMsg(char ErrorType, TreeNode *p);
 unsigned int hashSymbol(const char *name);
-bool searchSymbol(const char *name);
+SymbolNode *searchSymbol(const char *name);
 SymbolNode *pushinSymbol(const char *name);
 void clearSymbolStack();
 void procExtDef(TreeNode *p);
@@ -58,5 +58,7 @@ void procVarDec(Type nodetype, TreeNode *p);
 void procExp(TreeNode *p);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
+void pushSymbolStack();
+void popSymbolStack();
 
 #endif

@@ -15,6 +15,7 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case '1': printf("Error type 1 at line %d: Undefined variable \"%s\".\n", p->lineno, p->text); break;
 	case '2': printf("Error type 2 at line %d: Undefined function \"%s\".\n", p->lineno, p->text); break;
 	case '3': printf("Error type 3 at line %d: Redefined variable \"%s\".\n", p->lineno, p->text); break;
+	case '4': printf("Error type 4 at line %d: Redefined function \"%s\".\n", p->lineno, p->text); break;
 	}
 }
 
@@ -29,14 +30,14 @@ unsigned int hashSymbol(const char *name)
 	return val;
 }
 
-bool searchSymbol(const char *name)
+SymbolNode *searchSymbol(const char *name)
 {
 	SymbolNode *temp = HashTable[hashSymbol(name)]; // generate the hash slot
 	for (; temp != NULL; temp = temp->HashNext) {
 		if (STREQ(temp->text, name))
-			return true;
+			return temp;
 	}
-	return false;
+	return NULL;
 }
 
 // Given the symbol name, return an empty SymbolNode generated at the correct position.
@@ -127,17 +128,21 @@ void procExtDef(TreeNode *p)
 // ParamDec -> Specifier VarDec
 void procFunDec(Type nodetype, TreeNode *p)
 {
+	SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
+	if (symboltemp != NULL)
+	{
+		symbolErrorMsg('4', p->children[0]);
+		pushSymbolStack();
+		return;
+	}
+	
 	SymbolNode *newnode = pushinSymbol(p->children[0]->text);
 	strcpy(newnode->text, p->children[0]->text);
 	newnode->isfunc = true, newnode->isdef = true;
 	newnode->lineno = p->children[0]->lineno;
 	newnode->FuncMsg.RetValType = nodetype;
 	
-	// push a new field into the stack
-	SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
-	newstacknode->next = SymbolStackHead;
-	SymbolStackHead = newstacknode;
-	SymbolStackHead->SymbolHead = NULL;
+	pushSymbolStack();
 	
 	if (p->arity == 4) {
 		int cnt = 1;
@@ -210,7 +215,7 @@ Type procSpecifier(TreeNode *p)
 void procVarDec(Type nodetype, TreeNode *p)
 {
 	if (p->arity == 1) {
-		if (searchSymbol(p->children[0]->text)) {
+		if (searchSymbol(p->children[0]->text) != NULL) {
 			symbolErrorMsg('3', p->children[0]);
 		}
 		SymbolNode *newnode = pushinSymbol(p->children[0]->text);
@@ -229,12 +234,12 @@ void procExp(TreeNode *p)
 {
 	int i;
 	if (p->arity == 1 && STREQ(p->children[0]->symbol, "ID")) {
-		if(!searchSymbol(p->children[0]->text))
+		if(searchSymbol(p->children[0]->text) == NULL)
 			symbolErrorMsg('1', p->children[0]);
 		return;
 	}
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
-		if (!searchSymbol(p->children[0]->text))
+		if (searchSymbol(p->children[0]->text) == NULL)
 			symbolErrorMsg('2', p->children[0]);
 		return;
 	}
@@ -264,24 +269,10 @@ void buildSymbolTable(TreeNode *p)
 		return;
 	}
 	if (STREQ(p->symbol, "LC")) {
-		// push a new field into the stack
-		SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
-		newstacknode->next = SymbolStackHead;
-		SymbolStackHead = newstacknode;
-		SymbolStackHead->SymbolHead = NULL;
+		pushSymbolStack();
 	}
 	if (STREQ(p->symbol, "RC")) {
-		// pop out the field at the top of the stack
-		SymbolStackNode *nodetodelete = SymbolStackHead;
-		SymbolStackHead = SymbolStackHead->next;
-		while (nodetodelete->SymbolHead != NULL) {
-			SymbolNode *temp = nodetodelete->SymbolHead;
-			if (temp->isfunc && temp->FuncMsg.ArgNum > 0)
-				free(temp->FuncMsg.ArgType);
-			nodetodelete->SymbolHead = nodetodelete->SymbolHead->StackNext;
-			free(temp);
-		}
-		free(nodetodelete);
+		popSymbolStack();
 	}
 	int i;
 	for (i = 0; i < p->arity; i++)
@@ -299,5 +290,29 @@ void procSymbolTable(TreeNode *p)
 	buildSymbolTable(p);
 	printf("ohhhhhhh!%s\n", p->text);
 	clearSymbolStack();
+}
+
+void pushSymbolStack()
+{
+	// push a new field into the stack
+	SymbolStackNode *newstacknode = (SymbolStackNode *) malloc(sizeof(SymbolStackNode));
+	newstacknode->next = SymbolStackHead;
+	SymbolStackHead = newstacknode;
+	SymbolStackHead->SymbolHead = NULL;
+}
+
+void popSymbolStack()
+{
+	// pop out the field at the top of the stack
+	SymbolStackNode *nodetodelete = SymbolStackHead;
+	SymbolStackHead = SymbolStackHead->next;
+	while (nodetodelete->SymbolHead != NULL) {
+		SymbolNode *temp = nodetodelete->SymbolHead;
+		if (temp->isfunc && temp->FuncMsg.ArgNum > 0)
+			free(temp->FuncMsg.ArgType);
+		nodetodelete->SymbolHead = nodetodelete->SymbolHead->StackNext;
+		free(temp);
+	}
+	free(nodetodelete);
 }
 
