@@ -364,7 +364,7 @@ Type procExp(TreeNode *p)
 					printf("%s, ", str);
 				}
 				printType(call[i], str);
-				printf("%s)".\n", str);
+				printf("%s)\".\n", str);
 			}
 			free(call);
 		}
