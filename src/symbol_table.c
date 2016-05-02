@@ -17,6 +17,8 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case '3': printf("Error type 3 at line %d: Redefined variable \"%s\".\n", p->lineno, p->text); break;
 	case '4': printf("Error type 4 at line %d: Redefined function \"%s\".\n", p->lineno, p->text); break;
 	case '5': printf("Error type 5 at line %d: Type mismatched for assignment.\n", p->lineno); break;
+	case '6': printf("Error type 6 at line %d: The left-hand side of an assignment must be a variable.\n", p->lineno); break;
+	case '7': printf("Error type 7 at line %d: Type mismatched for operands.\n", p->lineno); break;
 	}
 }
 
@@ -231,8 +233,19 @@ void procVarDec(Type nodetype, TreeNode *p)
 	}
 }
 
+// Stmt -> Exp SEMI
+//       | CompSt
+//       | RETURN Exp SEMI
+//       | IF LP Exp RP Stmt
+//       | IF LP Exp RP Stmt ELSE Stmt
+//       | WHILE LP Exp RP Stmt
+void procStmt(TreeNode *p)
+{
+}
+
 unsigned int procExp(TreeNode *p)
 {
+	// single element
 	if (p->arity == 1) {
 		if (STREQ(p->children[0]->symbol, "ID")) {
 			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
@@ -247,15 +260,31 @@ unsigned int procExp(TreeNode *p)
 		else return 2;
 	}
 	
+	// function
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "LP")) {
 		if (searchSymbol(p->children[0]->text) == NULL)
 			symbolErrorMsg('2', p->children[0]);
 		return -1;
 	}
-	if (p->arity > 2 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
+	
+	// three elements
+	if (p->arity == 3 && STREQ(p->children[0]->symbol, "LP")) { // brackets
+		return procExp(p->children[1]);
+	}
+	if (p->arity == 3 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
+		if (!STREQ(p->children[0]->children[0]->symbol, "ID"))
+			symbolErrorMsg('6', p);
 		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
 		if (lval != -1 && rval != -1 && lval != rval) {
 			symbolErrorMsg('5', p);
+			return -1;
+		}
+		return lval;
+	}
+	if (p->arity == 3) {
+		unsigned int lval = procExp(p->children[0]), rval = procExp(p->children[2]);
+		if (lval != -1 && rval != -1 && lval != rval) {
+			symbolErrorMsg('7', p);
 			return -1;
 		}
 		return lval;
