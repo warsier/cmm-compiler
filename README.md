@@ -10,6 +10,9 @@ Till now, this compiler has the function of:
 * The lexical analysis part can also deal with comments without nests, octal and hexademical numbers, and scientific notation.
 * Some differences (mistakes?) in the implement of error output and error recovery.
 
+* The analysis of all compulsory semantic errors.
+* Implement of different scopes.
+
 ## 1. Compilation and Usage
 For the convenience of presentation, I use ```$(DIR)``` to express the root directory of the folder in the following descriptions.
 
@@ -31,7 +34,7 @@ To compile all files, use command
 make
 ```
 
-To perform tests on all ```.cmm``` files in folder ```$(DIR)/test```, use command
+To perform tests on all part 2 ```.cmm``` files in folder ```$(DIR)/test```, use command
 ```Bash
 make test
 ```
@@ -56,10 +59,13 @@ make clean
  	
 You can control the indent of the output syntax tree or always enable output regardless of the errors by modify values in file ```$(DIR)/include/syntax_tree.h```.
 
-## 2. Data Structure
+## 2. Data Structure of Lexical Analysis
 I use a struct type "TreeNode" to implement a syntactic unit, the definition can be found in ```$(DIR)/include/syntax_tree.h```. For each syntactic unit, the program will dynamically allocate memory for the TreeNode. However, the members in TreeNode are all static. Consider that the ID name a user create can be very long, the robustness of the program is not good enough.
 
 I define two functions in ```$(DIR)/src/syntax_tree.c``` to create a node and delete nodes. Function ```printTree``` is also defined in it, which is used to print the whole syntax tree.
 
 Meanwhile, the assignment for specific terminal or nonterminal TreeNodes are done in ```$(DIR)/lexical.l``` and ```$(DIR)/syntax.y```.
+
+## 3. Data Structure of Semantic Analysis
+My symbol table is based on an orthogonal list and a hash table, the definition can be found in ```$(DIR)/include/symbol_table.h```. For each syntactic unit to be analyzed, I defined a function which can be found in ```$(DIR)/include/symbol_table.c```. Function ```procSymbolTable``` is the entrance of the semantic analysis and is called in ```$(DIR)/syntax.y```. Function ```buildSymbolTable``` is used to loop through the syntax tree recursively and the function will call other functions if met with a syntactical unit to analyze.
 
