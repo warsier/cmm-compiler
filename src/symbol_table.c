@@ -26,6 +26,10 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case 'b': printf("Error type 11 at line %d: \"%s\" is not a function.\n", p->lineno, p->text); break;
 	case 'c': printf("Error type 12 at line %d: \"%s\" is not an integer.\n", p->lineno, p->text); break;
 	case 'd': printf("Error type 13 at line %d: Illegal use of \".\".\n", p->lineno); break;
+	case 'e': printf("Error type 14 at line %d: Non-existent field \"%s\".\n", p->lineno, p->text); break;
+	case 'f': printf("Error type 15 at line %d: Redefined field \"%s\".\n", p->lineno, p->text); break;
+	case 'g': printf("Error type 16 at line %d: Duplicated name \"%s\".\n", p->lineno, p->text); break;
+	case 'h': printf("Error type 17 at line %d: Undefined structure \"%s\".\n", p->lineno, p->text); break;
 	}
 }
 
@@ -95,9 +99,9 @@ SymbolNode *searchStructTable(const char *name)
 	return NULL;
 }
 
-FieldList *searchStructField(const char *name)
+FieldList *searchStructField(FieldList *structure, const char *name)
 {
-	FieldList *temp = StructTableHead->VarMsg->structure;
+	FieldList *temp = structure;
 	for (; temp != NULL; temp = temp->next) {
 		if (STREQ(temp->name, name))
 			return temp;
@@ -353,6 +357,11 @@ Type procSpecifier(TreeNode *p)
 	else if (STREQ(p->children[0]->symbol, "StructSpecifier")) {
 		TreeNode *structtemp = p->children[0];
 		if (structtemp->arity > 3) {
+			if (searchStructTable(structtemp->children[1]->children[0]->text) != NULL) {
+				symbolErrorMsg('g', structtemp->children[1]->children[0]);
+				nodetype.kind = NOTDEF;
+				return nodetype;
+			}
 			SymbolNode *newnode = pushinStruct(structtemp->children[1]->children[0]->text);
 			strcpy(newnode->text, structtemp->children[1]->children[0]->text);
 			newnode->VarMsg = (Type *) malloc(sizeof(Type));
@@ -365,7 +374,11 @@ Type procSpecifier(TreeNode *p)
 			nodetype = *newnode->VarMsg;
 		}
 		else {
-			
+			SymbolNode *symboltemp = searchStructTable(structtemp->children[1]->children[0]->text);
+			if (symboltemp == NULL)
+				symbolErrorMsg('h', structtemp->children[1]->children[0]);
+			else 
+				nodetype = *symboltemp->VarMsg;
 		}
 	}
 	else {
@@ -419,11 +432,14 @@ void procVarDec(Type nodetype, TreeNode *p)
 void procStructVarDec(Type nodetype, TreeNode *p)
 {
 	if (p->arity == 1) {
-		if (searchStructField(p->children[0]->text) != NULL) {
-			symbolErrorMsg('3', p->children[0]);
+		if (searchStructField(StructTableHead->VarMsg->structure, p->children[0]->text) != NULL) {
+			symbolErrorMsg('f', p->children[0]);
 			return;
 		}
 		FieldList *newnode = pushinStructField(p->children[0]->text);
+		strcpy(newnode->name, p->children[0]->text);
+		newnode->type = (Type *) malloc(sizeof(Type));
+		memcpy(newnode->type, &nodetype, sizeof(Type));
 	}
 	else {
 	}
@@ -457,18 +473,12 @@ Type procExp(TreeNode *p)
 	if (p->arity == 1) {
 		if (STREQ(p->children[0]->symbol, "ID")) {
 			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
-			SymbolNode *structtemp = searchStructTable(p->children[0]->text);
-			if(symboltemp == NULL && structtemp == NULL) {
+			if(symboltemp == NULL) {
 				symbolErrorMsg('1', p->children[0]);
 				retval.kind = NOTDEF;
 				return retval;
 			}
-			else if (symboltemp != NULL) {
-				retval = *symboltemp->VarMsg;
-			}
-			else if (structtemp != NULL) {
-				retval = *structtemp->VarMsg;
-			}
+			retval = *symboltemp->VarMsg;
 			return retval;
 		}
 		else if (STREQ(p->children[0]->symbol, "INT")) {
@@ -512,11 +522,22 @@ Type procExp(TreeNode *p)
 	}
 	
 	// struct
-	if (p->arity > 1 && STREQ(p->children[1]->symbol, "DOT")) {
-		if (procExp(p->children[0]).kind == BASIC || procExp(p->children[0]).kind == NOTDEF) {
+	if (p->arity > 2 && STREQ(p->children[1]->symbol, "DOT")) {
+		Type typetemp = procExp(p->children[0]);
+		if (typetemp.kind != STRUCTURE) {
 			symbolErrorMsg('d', p->children[0]);
 			retval.kind = NOTDEF;
 			return retval;
+		}
+		else {
+			FieldList *listtemp = searchStructField(typetemp.structure, p->children[2]->text);
+			if (listtemp == NULL) {
+				symbolErrorMsg('e', p->children[2]);
+				retval.kind = NOTDEF;
+				return retval;
+			}
+			else
+				retval = *listtemp->type;
 		}
 		return retval;
 	}

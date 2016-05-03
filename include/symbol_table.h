@@ -18,7 +18,7 @@ typedef struct Type {
 
 // one field in a structure.
 typedef struct FieldList {
-	char *name;
+	char name[MAX_LEN];
 	struct Type *type;
 	struct FieldList *next;
 } FieldList;
@@ -51,8 +51,11 @@ void printType(Type t, char *str);
 void deleteType(Type *t);
 unsigned int hashSymbol(const char *name);
 SymbolNode *searchSymbol(const char *name);
+SymbolNode *searchStructTable(const char *name);
+FieldList *searchStructField(FieldList *structure, const char *name);
 SymbolNode *pushinSymbol(const char *name);
 SymbolNode *pushinStruct(const char *name);
+FieldList *pushinStructField(const char *name);
 void clearSymbolStack();
 void clearStructTable();
 int TypeEQ(Type lval, Type rval);
