@@ -25,7 +25,6 @@ void symbolErrorMsg(char ErrorType, TreeNode *p)
 	case 'a': printf("Error type 10 at line %d: \"%s\" is not an array.\n", p->lineno, p->text); break;
 	case 'b': printf("Error type 11 at line %d: \"%s\" is not a function.\n", p->lineno, p->text); break;
 	case 'c': printf("Error type 12 at line %d: \"%s\" is not an integer.\n", p->lineno, p->text); break;
-	case 'd': printf("Error type 13 at line %d: Illegal use of \".\".\n", p->lineno); break;
 	}
 }
 
@@ -42,11 +41,11 @@ void printType(Type t, char *str)
 
 void deleteType(Type *t)
 {
+	Type *temp = t;
 	if (t->kind == BASIC) {
 		free(t);
 	}
 	if (t->kind == ARRAY) {
-		Type *temp = t;
 		while (t->kind != BASIC) {
 			t = t->array.elem;
 			free(temp);
@@ -55,12 +54,7 @@ void deleteType(Type *t)
 		free(t);
 	}
 	if (t->kind == STRUCTURE) {
-		while (t->structure != NULL) {
-			FieldList *temp = t->structure;
-			t->structure = t->structure->next;
-			free(temp);
-		}
-		free(t);
+		assert(0);
 	}
 }
 
@@ -80,16 +74,6 @@ SymbolNode *searchSymbol(const char *name)
 	SymbolNode *temp = HashTable[hashSymbol(name)]; // generate the hash slot
 	for (; temp != NULL; temp = temp->HashNext) {
 		if (STREQ(temp->text, name))
-			return temp;
-	}
-	return NULL;
-}
-
-FieldList *searchStructField(const char *name)
-{
-	FieldList *temp = StructTableHead->VarMsg->structure;
-	for (; temp != NULL; temp = temp->next) {
-		if (STREQ(temp->name, name))
 			return temp;
 	}
 	return NULL;
@@ -142,20 +126,6 @@ SymbolNode *pushinStruct(const char *name)
 	return newnode;
 }
 
-FieldList *pushinStructField(const char *name)
-{
-	FieldList *newnode = (FieldList *) malloc(sizeof(FieldList));
-	if (StructTableHead->VarMsg->structure == NULL) {
-		StructTableHead->VarMsg->structure = newnode;
-		newnode->next = NULL;
-	}
-	else {
-		newnode->next = StructTableHead->VarMsg->structure;
-		StructTableHead->VarMsg->structure = newnode;
-	}
-	return newnode;
-}
-
 void clearSymbolStack()
 {
 	while (SymbolStackHead != NULL) {
@@ -182,7 +152,7 @@ void clearStructTable()
 {
 	while (StructTableHead != NULL) {
 		SymbolNode *p = StructTableHead;
-		StructTableHead = StructTableHead->StackNext;
+		StructTableHead = StructTableHead->next;
 		if (p->isfunc && p->FuncMsg.ArgNum > 0)
 			free(p->FuncMsg.ArgType);
 		if (!p->isfunc)
@@ -299,6 +269,7 @@ void procFunDec(Type nodetype, TreeNode *p)
 //      | VarDec AssignOP Exp
 void procDef(TreeNode *p)
 {
+	// Specifier can be TYPE or StructSpecifier
 	Type nodetype = procSpecifier(p->children[0]);
 	TreeNode *temp = p->children[1];
 	while (temp->arity > 1) {
@@ -306,17 +277,6 @@ void procDef(TreeNode *p)
 		temp = temp->children[2];
 	}
 	procVarDec(nodetype, temp->children[0]->children[0]);
-}
-
-void procStructDef(TreeNode *p)
-{
-	Type nodetype = procSpecifier(p->children[0]);
-	TreeNode *temp = p->children[1];
-	while (temp->arity > 1) {
-		procStructVarDec(nodetype, temp->children[0]->children[0]);
-		temp = temp->children[2];
-	}
-	procStructVarDec(nodetype, temp->children[0]->children[0]);
 }
 
 // Specifier -> TYPE 
@@ -341,12 +301,7 @@ Type procSpecifier(TreeNode *p)
 			strcpy(newnode->text, structtemp->children[1]->children[0]->text);
 			newnode->VarMsg = (Type *) malloc(sizeof(Type));
 			newnode->VarMsg->kind = STRUCTURE;
-			TreeNode *deftemp = structtemp->children[3];
-			while (deftemp->arity > 1) {
-				procStructDef(deftemp->children[0]);
-				deftemp = deftemp->children[1];
-			}
-			nodetype = *newnode->VarMsg;
+			/**Here**/
 		}
 		else {
 			
@@ -397,19 +352,6 @@ void procVarDec(Type nodetype, TreeNode *p)
 		newnode->isfunc = false, newnode->isdef = true;
 		newnode->lineno = p->children[0]->lineno;
 		newnode->VarMsg = arrayhead;
-	}
-}
-
-void procStructVarDec(Type nodetype, TreeNode *p)
-{
-	if (p->arity == 1) {
-		if (searchStructField(p->children[0]->text) != NULL) {
-			symbolErrorMsg('3', p->children[0]);
-			return;
-		}
-		FieldList *newnode = pushinStructField(p->children[0]->text);
-	}
-	else {
 	}
 }
 
@@ -489,13 +431,6 @@ Type procExp(TreeNode *p)
 		}
 	}
 	
-	// struct
-	if (p->arity > 1 && STREQ(p->children[1]->symbol, "DOT")) {
-		if (procExp(p->children[0]).kind == BASIC)
-			symbolErrorMsg('d', p->children[0]);
-	}
-	
-		
 	// function
 	// Exp -> ID LP Args RP
 	//      | ID LP RP
@@ -579,7 +514,7 @@ Type procExp(TreeNode *p)
 		}
 		return lval;
 	}
-	if (p->arity == 3 && !STREQ(p->children[1]->symbol, "Exp") && !STREQ(p->children[1]->symbol, "DOT")) {
+	if (p->arity == 3) {
 		Type lval = procExp(p->children[0]), rval = procExp(p->children[2]);	
 		if (TypeEQ(lval, rval) == 0) {
 			symbolErrorMsg('7', p);
