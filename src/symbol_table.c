@@ -85,6 +85,16 @@ SymbolNode *searchSymbol(const char *name)
 	return NULL;
 }
 
+SymbolNode *searchStructTable(const char *name)
+{
+	SymbolNode *temp = StructTableHead;
+	for (; temp != NULL; temp = temp->StackNext) {
+		if (STREQ(temp->text, name))
+			return temp;
+	}
+	return NULL;
+}
+
 FieldList *searchStructField(const char *name)
 {
 	FieldList *temp = StructTableHead->VarMsg->structure;
@@ -199,10 +209,16 @@ int TypeEQ(Type lval, Type rval)
 		if (lval.basic != rval.basic) return 0;
 	}
 	else if (lval.kind == ARRAY) {
-		assert(0);
+		if (lval.array.size != rval.array.size) return 0;
+		if (TypeEQ(*lval.array.elem, *rval.array.elem) == 0) return 0;
 	}
 	else {
-		assert(0);
+		FieldList *llist = lval.structure, *rlist = rval.structure;
+		while (llist != NULL && rlist != NULL) {
+			if (TypeEQ(*llist->type, *rlist->type) == 0) return 0;
+			llist = llist->next, rlist = rlist->next;
+		}
+		if (!(llist == NULL && rlist == NULL)) return 0;
 	}
 	return 1;
 }
@@ -441,12 +457,18 @@ Type procExp(TreeNode *p)
 	if (p->arity == 1) {
 		if (STREQ(p->children[0]->symbol, "ID")) {
 			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
-			if(symboltemp == NULL) {
+			SymbolNode *structtemp = searchStructTable(p->children[0]->text);
+			if(symboltemp == NULL && structtemp == NULL) {
 				symbolErrorMsg('1', p->children[0]);
 				retval.kind = NOTDEF;
 				return retval;
 			}
-			retval = *symboltemp->VarMsg;
+			else if (symboltemp != NULL) {
+				retval = *symboltemp->VarMsg;
+			}
+			else if (structtemp != NULL) {
+				retval = *structtemp->VarMsg;
+			}
 			return retval;
 		}
 		else if (STREQ(p->children[0]->symbol, "INT")) {
@@ -491,8 +513,12 @@ Type procExp(TreeNode *p)
 	
 	// struct
 	if (p->arity > 1 && STREQ(p->children[1]->symbol, "DOT")) {
-		if (procExp(p->children[0]).kind == BASIC)
+		if (procExp(p->children[0]).kind == BASIC || procExp(p->children[0]).kind == NOTDEF) {
 			symbolErrorMsg('d', p->children[0]);
+			retval.kind = NOTDEF;
+			return retval;
+		}
+		return retval;
 	}
 	
 		
