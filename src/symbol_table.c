@@ -432,6 +432,7 @@ void procVarDec(Type nodetype, TreeNode *p)
 void procStructVarDec(Type nodetype, TreeNode *p)
 {
 	if (p->arity == 1) {
+		printf("%s\n", p->children[0]->text);
 		if (searchStructField(StructTableHead->VarMsg->structure, p->children[0]->text) != NULL) {
 			symbolErrorMsg('f', p->children[0]);
 			return;

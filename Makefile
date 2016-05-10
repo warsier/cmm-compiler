@@ -3,7 +3,7 @@ LD             = ld
 CFLAGS         = -ggdb -MD -fno-strict-aliasing -I./include -O2 -Wno-unused-result -fno-stack-protector -lfl -ly
 CFILES         = $(shell find ./src -name "*.c")
 OBJS           = $(CFILES:.c=.o)
-TEST_FILE_LIST = $(shell find ./test -name "2.*.cmm")
+TEST_FILE_LIST = $(shell find ./test -name "3.*.cmm")
 SRC_DIR        = ./src
 
 all:

@@ -69,3 +69,4 @@ Meanwhile, the assignment for specific terminal or nonterminal TreeNodes are don
 ## 3. Data Structure of Semantic Analysis
 My symbol table is based on an orthogonal list and a hash table, the definition can be found in ```$(DIR)/include/symbol_table.h```. For each syntactic unit to be analyzed, I defined a function which can be found in ```$(DIR)/include/symbol_table.c```. Function ```procSymbolTable``` is the entrance of the semantic analysis and is called in ```$(DIR)/syntax.y```. Function ```buildSymbolTable``` is used to loop through the syntax tree recursively and the function will call other functions if met with a syntactical unit to analyze.
 
+Note that there are some incorrect outputs in the testcases, I will resubmit later to correct them.
