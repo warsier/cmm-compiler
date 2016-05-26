@@ -321,7 +321,7 @@ void procDef(TreeNode *p)
 {
 	Type nodetype = procSpecifier(p->children[0]);
 	TreeNode *temp = p->children[1];
-	while (temp->arity > 1) {
+	while (temp->arity > 1) {		
 		procVarDec(nodetype, temp->children[0]->children[0]);
 		temp = temp->children[2];
 	}
@@ -371,6 +371,7 @@ Type procSpecifier(TreeNode *p)
 				procStructDef(deftemp->children[0]);
 				deftemp = deftemp->children[1];
 			}
+			procStructDef(deftemp->children[0]);
 			nodetype = *newnode->VarMsg;
 		}
 		else {
@@ -401,8 +402,9 @@ void procVarDec(Type nodetype, TreeNode *p)
 		newnode->isfunc = false, newnode->isdef = true;
 		newnode->lineno = p->children[0]->lineno;
 		newnode->VarMsg = (Type *) malloc(sizeof(Type));
-		newnode->VarMsg->kind = BASIC;
-		newnode->VarMsg->basic = nodetype.basic;
+		memcpy(newnode->VarMsg, &nodetype, sizeof(Type));
+		/* newnode->VarMsg->kind = BASIC;
+		newnode->VarMsg->basic = nodetype.basic; */
 	}
 	else {
 		TreeNode *temp = p;
@@ -432,7 +434,6 @@ void procVarDec(Type nodetype, TreeNode *p)
 void procStructVarDec(Type nodetype, TreeNode *p)
 {
 	if (p->arity == 1) {
-		printf("%s\n", p->children[0]->text);
 		if (searchStructField(StructTableHead->VarMsg->structure, p->children[0]->text) != NULL) {
 			symbolErrorMsg('f', p->children[0]);
 			return;
@@ -490,7 +491,9 @@ Type procExp(TreeNode *p)
 			retval.kind = BASIC;
 			retval.basic = B_FLOAT;
 		}
+		
 		return retval;
+
 	}
 	
 	// array
@@ -689,8 +692,6 @@ void procSymbolTable(TreeNode *p)
 	SymbolStackHead->next = NULL;
 	SymbolStackHead->SymbolHead = NULL;
 	buildSymbolTable(p);
-	clearSymbolStack();
-	clearStructTable();
 }
 
 void pushSymbolStack()

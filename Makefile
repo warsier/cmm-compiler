@@ -3,7 +3,7 @@ LD             = ld
 CFLAGS         = -ggdb -MD -fno-strict-aliasing -I./include -O2 -Wno-unused-result -fno-stack-protector -lfl -ly
 CFILES         = $(shell find ./src -name "*.c")
 OBJS           = $(CFILES:.c=.o)
-TEST_FILE_LIST = $(shell find ./test -name "2.*.cmm")
+TEST_FILE_LIST = $(shell find ./test -name "3.*.cmm")
 SRC_DIR        = ./src
 
 all:
@@ -24,7 +24,7 @@ test: all $(TEST_FILE_LIST)
 	
 gdb: all $(TEST_FILE_LIST)
 	@rm -f log.txt
-	gdb --args ./parser ./test/2.14.cmm | tee -a log.txt
+	gdb --args ./parser ./test/2.20.cmm | tee -a log.txt
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)

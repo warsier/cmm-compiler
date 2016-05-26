@@ -49,8 +49,12 @@ Program : ExtDefList {
 		$$ = procTreeNode(createTreeNode(1, $1), "Program");
 		if(errorStat == false && ALWAYS_OUTPUT_TREE == 1)
 			printTree($$, 0);
-		// procSymbolTable($$);
+		fflush(stdout);
+		procSymbolTable($$);
+		// procIR($$);
 		deleteTreeNode($$);
+		clearSymbolStack();
+		clearStructTable();
 	}
 	;
 ExtDefList : ExtDef ExtDefList {$$ = procTreeNode(createTreeNode(2, $1, $2), "ExtDefList");}
