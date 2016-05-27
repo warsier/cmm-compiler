@@ -2,6 +2,7 @@
 #define __SYMBOL_TABLE_H__
 
 #include "syntax_tree.h"
+#include "ir.h"
 #include "common.h"
 
 #define HASH_MASK (0x3fff) // the size of hash table
@@ -28,6 +29,7 @@ typedef struct SymbolNode {
 	bool isfunc; // the symbol is a function or a variable
 	bool isdef; // this symbol is a definition or a declaration (we don't need to consider extern variables, so isdef is always true for variables)
 	int lineno;
+	int irno;
 	union {
 		struct {
 			Type RetValType; // type of return value
@@ -66,7 +68,7 @@ void procStructDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
 void procStructVarDec(Type nodetype, TreeNode *p);
-Type procExp(TreeNode *p);
+Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 void pushSymbolStack();

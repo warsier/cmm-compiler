@@ -51,10 +51,7 @@ Program : ExtDefList {
 			printTree($$, 0);
 		fflush(stdout);
 		procSymbolTable($$);
-		// procIR($$);
 		deleteTreeNode($$);
-		clearSymbolStack();
-		clearStructTable();
 	}
 	;
 ExtDefList : ExtDef ExtDefList {$$ = procTreeNode(createTreeNode(2, $1, $2), "ExtDefList");}

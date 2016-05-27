@@ -20,8 +20,8 @@ typedef struct TreeNode
 	struct TreeNode *children[MAX_CHILDREN];
 } TreeNode;
 
-extern TreeNode *createTreeNode(int arity, ...);
-extern void printTree(TreeNode *p, int depth);
-extern void deleteTreeNode(TreeNode *p);
+TreeNode *createTreeNode(int arity, ...);
+void printTree(TreeNode *p, int depth);
+void deleteTreeNode(TreeNode *p);
 
 #endif

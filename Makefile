@@ -19,17 +19,18 @@ test: all $(TEST_FILE_LIST)
 	@rm -f log.txt
 	@for TEST_FILE in $(TEST_FILE_LIST); do \
 		echo "\n@@@ TESTFILE: $$TEST_FILE @@@" | tee -a log.txt; \
-		./parser $$TEST_FILE 2>&1 | tee -a log.txt;\
+		./parser $$TEST_FILE 2>&1 out.ir | tee -a log.txt;\
 	done
 	
 gdb: all $(TEST_FILE_LIST)
 	@rm -f log.txt
-	gdb --args ./parser ./test/2.20.cmm | tee -a log.txt
+	gdb --args ./parser ./test/3.01.cmm out1.ir | tee -a log.txt
 
 clean:
 	@rm -f $(OBJS) $(OBJS:.o=.d)
 	@rm -f scanner parser parser.d out lex.yy.c syntax.tab.c syntax.tab.h log.txt syntax.output
 	@rm -f .fuse*
+	@rm -f *.ir
 	
 commit:
 	@make clean
