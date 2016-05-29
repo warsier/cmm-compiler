@@ -1,5 +1,4 @@
 #include "symbol_table.h"
-#include "syntax_tree.h"
 #include "ir.h"
 #include "common.h"
 
@@ -64,6 +63,21 @@ void deleteType(Type *t)
 		free(t);
 	}
 }
+
+Operand generateVar(SymbolNode *p)
+{
+	Operand result;
+	result.kind = VARIABLE;
+	if (p->irno == -1) {
+		p->irno = InterCodeVarCnt;
+		InterCodeVarCnt++;
+		result.var_no = p->irno;
+	}
+	else
+		result.var_no = p->irno;
+	return result;
+}
+
 
 unsigned int hashSymbol(const char *name)
 {
@@ -458,7 +472,7 @@ void procStmt(TreeNode *p)
 		SymbolStackNode *funcfield = SymbolStackHead;
 		while (funcfield != NULL && funcfield->funcptr == NULL) 
 			funcfield = funcfield->next;
-		if (funcfield != NULL && TypeEQ(funcfield->funcptr->FuncMsg.RetValType, procExp(p->children[1], NULL, NULL)) == 0)
+		if (funcfield != NULL && TypeEQ(funcfield->funcptr->FuncMsg.RetValType, procExp(p->children[1], NULLOP, NULL)) == 0)
 			symbolErrorMsg('8', p);
 	}
 	int i;
@@ -466,14 +480,14 @@ void procStmt(TreeNode *p)
 		buildSymbolTable(p->children[i]);
 }
 
-Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
+Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 {
 	Type retval;
 	retval.kind = OTHER;
-	InterCode retcode;
 	
 	// single element
 	if (p->arity == 1) {
+		InterCode retcode;
 		if (STREQ(p->children[0]->symbol, "ID")) {
 			SymbolNode *symboltemp = searchSymbol(p->children[0]->text);
 			if(symboltemp == NULL) {
@@ -482,16 +496,21 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 				return retval;
 			}
 			retval = *symboltemp->VarMsg;
+			/* irpart */
+			retcode.kind = ASSIGN;
+			retcode.assign.left = place;
+			retcode.assign.right = generateVar(symboltemp);
+			InterCodeAppend(retIr, retcode);
 			return retval;
 		}
 		else if (STREQ(p->children[0]->symbol, "INT")) {
 			retval.kind = BASIC;
 			retval.basic = B_INT;
-			/* CAUTION: the following code is not correct */
+			/* irpart */
 			retcode.kind = ASSIGN;
-			retcode.assign.left.kind = CONSTANT, retcode.assign.left.value = p->children[0]->intVal;
+			retcode.assign.left = place;
 			retcode.assign.right.kind = CONSTANT, retcode.assign.right.value = p->children[0]->intVal;
-			InterCodeAppend(&InterCodeHead, retcode);
+			InterCodeAppend(retIr, retcode);
 		}
 		else {
 			retval.kind = BASIC;
@@ -521,7 +540,7 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 		while (temp->arity > 1) {
 			Type inttemp;
 			inttemp.kind = BASIC, inttemp.basic = B_INT;
-			if (TypeEQ(procExp(temp->children[2], NULL, NULL), inttemp) == 0) {
+			if (TypeEQ(procExp(temp->children[2], NULLOP, NULL), inttemp) == 0) {
 				symbolErrorMsg('c', temp->children[2]->children[0]);
 				retval.kind = NOTDEF;
 				return retval;
@@ -532,7 +551,7 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 	
 	// struct
 	if (p->arity > 2 && STREQ(p->children[1]->symbol, "DOT")) {
-		Type typetemp = procExp(p->children[0], NULL, NULL);
+		Type typetemp = procExp(p->children[0], NULLOP, NULL);
 		if (typetemp.kind != STRUCTURE) {
 			symbolErrorMsg('d', p->children[0]);
 			retval.kind = NOTDEF;
@@ -574,11 +593,11 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 			cnt = 0;
 			argstemp = p->children[2];
 			while (argstemp->arity > 1) {
-				call[cnt] = procExp(argstemp->children[0], NULL, NULL);
+				call[cnt] = procExp(argstemp->children[0], NULLOP, NULL);
 				cnt++;
 				argstemp = argstemp->children[2];
 			}
-			call[cnt] = procExp(argstemp->children[0], NULL, NULL);
+			call[cnt] = procExp(argstemp->children[0], NULLOP, NULL);
 			cnt++;
 			bool flag = true;
 			if (cnt != symboltemp->FuncMsg.ArgNum)
@@ -617,10 +636,11 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 	
 	// three elements
 	if (p->arity == 3 && STREQ(p->children[0]->symbol, "LP")) { // brackets
-		return procExp(p->children[1], NULL, NULL);
+		return procExp(p->children[1], place, retIr);
 	}
 	if (p->arity == 3 && STREQ(p->children[1]->symbol, "ASSIGNOP")) {
 		bool flag = false;
+		// left value is ensured that it can be assigned a value
 		if (STREQ(p->children[0]->children[0]->symbol, "ID")) flag = true;
 		if (p->children[0]->arity > 1 && STREQ(p->children[0]->children[1]->symbol, "LB")) flag = true;
 		if (p->children[0]->arity > 1 && STREQ(p->children[0]->children[1]->symbol, "DOT")) flag = true;
@@ -628,7 +648,18 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 			symbolErrorMsg('6', p);
 			return retval;
 		}
-		Type lval = procExp(p->children[0], NULL, NULL), rval = procExp(p->children[2], NULL, NULL);
+		/* irpart */
+		SymbolNode *symboltemp = searchSymbol(p->children[0]->children[0]->text);
+		InterCode irtemp;
+		irtemp.kind = ASSIGN;
+		irtemp.assign.left = generateVar(symboltemp);
+		irtemp.assign.right = generateTemp();
+		InterCodeNode lir, rir;
+		lir.next = &lir, lir.prev = &lir;
+		rir.next = &rir, rir.prev = &rir;
+		Type lval = procExp(p->children[0], place, &lir), rval = procExp(p->children[2], irtemp.assign.right, &rir);
+		InterCodeAppend(&rir, irtemp);
+		InterCodeCat(3, retIr, &rir, &lir);
 		if (TypeEQ(lval, rval) == 0) {
 			symbolErrorMsg('5', p);
 			return retval;
@@ -636,7 +667,7 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 		return lval;
 	}
 	if (p->arity == 3 && !STREQ(p->children[1]->symbol, "Exp") && !STREQ(p->children[1]->symbol, "DOT")) {
-		Type lval = procExp(p->children[0], NULL, NULL), rval = procExp(p->children[2], NULL, NULL);	
+		Type lval = procExp(p->children[0], NULLOP, NULL), rval = procExp(p->children[2], NULLOP, NULL);	
 		if (TypeEQ(lval, rval) == 0) {
 			symbolErrorMsg('7', p);
 			return retval;
@@ -646,7 +677,7 @@ Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr)
 	int i;
 	for (i = 0; i < p->arity; i++) {
 		if (p->arity > i && STREQ(p->children[i]->symbol, "Exp"))
-			procExp(p->children[i], NULL, NULL);
+			procExp(p->children[i], NULLOP, NULL);
 	}
 	return retval;
 }
@@ -657,9 +688,6 @@ void buildSymbolTable(TreeNode *p)
 		// if it is a global definition (can be a function or a variable)
 		procExtDef(p);
 		return;
-	}
-	if (STREQ(p->symbol, "StructSpecifier")) {
-		
 	}
 	if (STREQ(p->symbol, "Def")) {
 		// if it is a local variable definition
@@ -673,7 +701,7 @@ void buildSymbolTable(TreeNode *p)
 	}
 	if (STREQ(p->symbol, "Exp")) {
 		// if it is a variable use or function call
-		procExp(p, NULL, NULL);
+		procExp(p, NULLOP, &InterCodeHead);
 		return;
 	}
 	if (STREQ(p->symbol, "LC")) {

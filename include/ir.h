@@ -1,11 +1,10 @@
 #ifndef __IR_H__
 #define __IR_H__
 
-#include "syntax_tree.h"
 #include "common.h"
 
 typedef struct Operand {
-	enum { VARIABLE, CONSTANT, ADDRESS } kind;
+	enum { VARIABLE, TEMP, CONSTANT, ADDRESS } kind;
 	union {
 		int var_no;
 		int value;
@@ -24,10 +23,18 @@ typedef struct InterCodeNode {
 	InterCode code;
 	struct InterCodeNode *prev, *next;
 } InterCodeNode;
+/*
+Note that every empty InterCodeNode shall be initialized:
+	InterCodeNode icn;
+	icn.next = &icn, icn.prev = &icn;
+*/
 
+extern const struct Operand NULLOP;
 extern InterCodeNode InterCodeHead;
+extern int InterCodeVarCnt;
 
 void initIR();
+Operand generateTemp();
 InterCodeNode *InterCodeCat(int cnt, ...);
 InterCodeNode *InterCodeAppend(InterCodeNode *head, InterCode code);
 void deleteInterCode();

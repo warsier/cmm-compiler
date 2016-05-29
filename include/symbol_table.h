@@ -1,8 +1,8 @@
 #ifndef __SYMBOL_TABLE_H__
 #define __SYMBOL_TABLE_H__
 
-#include "syntax_tree.h"
 #include "ir.h"
+#include "syntax_tree.h"
 #include "common.h"
 
 #define HASH_MASK (0x3fff) // the size of hash table
@@ -51,6 +51,7 @@ typedef struct SymbolStackNode {
 void symbolErrorMsg(char ErrorType, TreeNode *p);
 void printType(Type t, char *str);
 void deleteType(Type *t);
+Operand generateVar(SymbolNode *p);
 unsigned int hashSymbol(const char *name);
 SymbolNode *searchSymbol(const char *name);
 SymbolNode *searchStructTable(const char *name);
@@ -68,7 +69,7 @@ void procStructDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
 void procStructVarDec(Type nodetype, TreeNode *p);
-Type procExp(TreeNode *p, Operand *place, InterCodeNode *retIr);
+Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);
 void pushSymbolStack();

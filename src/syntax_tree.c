@@ -1,3 +1,4 @@
+#include "ir.h"
 #include "syntax_tree.h"
 #include "common.h"
 

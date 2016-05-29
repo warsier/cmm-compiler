@@ -1,18 +1,28 @@
+#include "symbol_table.h"
 #include "ir.h"
-#include "syntax_tree.h"
 #include "common.h"
 
+const struct Operand NULLOP;
+
 InterCodeNode InterCodeHead;
-int InterCodeVarCnt;
+int InterCodeVarCnt, InterCodeTempCnt;
 
 void initIR()
 {
 	InterCodeHead.next = &InterCodeHead;
 	InterCodeHead.prev = &InterCodeHead;
-	InterCodeVarCnt = 0;
+	InterCodeVarCnt = 0, InterCodeTempCnt = 0;
 }
 
-
+Operand generateTemp()
+{
+	Operand result;
+	result.kind = TEMP;
+	result.var_no = InterCodeTempCnt;
+	InterCodeTempCnt++;
+	return result;
+}
+	
 InterCodeNode *InterCodeCat(int cnt, ...)
 {
 	va_list args;
@@ -21,10 +31,12 @@ InterCodeNode *InterCodeCat(int cnt, ...)
 	int i = 1;
 	for (; i < cnt; i++) {
 		InterCodeNode *temp = va_arg(args, InterCodeNode *);
-		result->prev->next = temp->next;
-		temp->next->prev = result->prev;
-		result->prev = temp->prev;
-		temp->prev->next = result;
+		if(temp->next != temp && temp->prev != temp) {
+			result->prev->next = temp->next;
+			temp->next->prev = result->prev;
+			result->prev = temp->prev;
+			temp->prev->next = result;
+		}
 	}
 	va_end(args);
 	return result;
@@ -32,6 +44,10 @@ InterCodeNode *InterCodeCat(int cnt, ...)
 
 InterCodeNode *InterCodeAppend(InterCodeNode *head, InterCode code)
 {
+	if (head == NULL) {
+		fprintf(stderr, "InterCodeAppend head is null.\n");
+		return head;
+	}
 	InterCodeNode *p = (InterCodeNode *) malloc(sizeof(InterCodeNode));
 	p->code = code;
 	if(head->prev == head && head->next == head) {
@@ -61,7 +77,11 @@ void printOperand(Operand *op, char *str)
 {
 	switch(op->kind) {
 	case VARIABLE:
-		assert(0);
+		sprintf(str, "v%d", op->var_no);
+		break;
+	case TEMP:
+		sprintf(str, "t%d", op->var_no);
+		break;
 	case CONSTANT:
 		sprintf(str, "#%d", op->value);
 		break;
