@@ -96,16 +96,52 @@ void printOperand(Operand *op, char *str)
 void printInterCode(FILE *fp)
 {	
 	InterCodeNode *p = InterCodeHead.next;
+	char resulttemp[MAX_LEN], ltemp[MAX_LEN], rtemp[MAX_LEN];
 	while (p->next != &InterCodeHead) {
-		if (p->code.kind == ASSIGN) {
-			char ltemp[MAX_LEN], rtemp[MAX_LEN];
+		switch(p->code.kind) {
+		case ASSIGN:
 			printOperand(&p->code.assign.left, ltemp);
 			printOperand(&p->code.assign.right, rtemp);
 			fprintf(fp, "%s := %s\n", ltemp, rtemp);
-		}
-		else {
+			break;
+		case ADD:
+			printOperand(&p->code.binop.result, resulttemp);
+			printOperand(&p->code.binop.op1, ltemp);
+			printOperand(&p->code.binop.op2, rtemp);
+			fprintf(fp, "%s := %s + %s\n", resulttemp, ltemp, rtemp);
+			break;
+		case SUB:
+			printOperand(&p->code.binop.result, resulttemp);
+			printOperand(&p->code.binop.op1, ltemp);
+			printOperand(&p->code.binop.op2, rtemp);
+			fprintf(fp, "%s := %s - %s\n", resulttemp, ltemp, rtemp);
+			break;
+		case MUL:
+			printOperand(&p->code.binop.result, resulttemp);
+			printOperand(&p->code.binop.op1, ltemp);
+			printOperand(&p->code.binop.op2, rtemp);
+			fprintf(fp, "%s := %s * %s\n", resulttemp, ltemp, rtemp);
+			break;
+		case DIV_:
+			printOperand(&p->code.binop.result, resulttemp);
+			printOperand(&p->code.binop.op1, ltemp);
+			printOperand(&p->code.binop.op2, rtemp);
+			fprintf(fp, "%s := %s / %s\n", resulttemp, ltemp, rtemp);
+			break;
+		default:
 			assert(0);
 		}
 		p = p->next;
+	}
+	if (OUTPUT_TO_SCREEN) {
+		rewind(fp);
+		char ch;
+		printf("----------------------------------------------\n");
+		ch = fgetc(fp);
+		while (ch != EOF) {
+			putchar(ch);
+			ch = fgetc(fp);
+		}
+		printf("----------------------------------------------\n");
 	}
 }

@@ -2,6 +2,7 @@
 #define __IR_H__
 
 #include "common.h"
+#define OUTPUT_TO_SCREEN 1
 
 typedef struct Operand {
 	enum { VARIABLE, TEMP, CONSTANT, ADDRESS } kind;
@@ -12,7 +13,7 @@ typedef struct Operand {
 } Operand;
 
 typedef struct InterCode {
-	enum { ASSIGN, ADD, SUB, MUL } kind;
+	enum { ASSIGN, ADD, SUB, MUL, DIV_ } kind;
 	union {
 		struct { Operand left, right; } assign;
 		struct { Operand result, op1, op2; } binop;

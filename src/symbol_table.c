@@ -667,12 +667,31 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		return lval;
 	}
 	if (p->arity == 3 && !STREQ(p->children[1]->symbol, "Exp") && !STREQ(p->children[1]->symbol, "DOT")) {
-		Type lval = procExp(p->children[0], NULLOP, NULL), rval = procExp(p->children[2], NULLOP, NULL);	
-		if (TypeEQ(lval, rval) == 0) {
-			symbolErrorMsg('7', p);
-			return retval;
+		InterCodeNode lir, rir;
+		lir.next = &lir, lir.prev = &lir;
+		rir.next = &rir, rir.prev = &rir;
+		Operand optemp1 = generateTemp(), optemp2 = generateTemp();
+		Type lval = procExp(p->children[0], optemp1, &lir), rval = procExp(p->children[2], optemp2, &rir);	
+		InterCode ictemp;
+		if (STREQ(p->children[1]->symbol, "PLUS")) {
+			ictemp.kind = ADD, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
 		}
-		return lval;
+		if (STREQ(p->children[1]->symbol, "MINUS")) {
+			ictemp.kind = SUB, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
+		}
+		if (STREQ(p->children[1]->symbol, "STAR")) {
+			ictemp.kind = MUL, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
+		}
+		if (STREQ(p->children[1]->symbol, "DIV")) {
+			ictemp.kind = DIV_, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
+		}
+		InterCodeAppend(&rir, ictemp);
+			InterCodeCat(3, retIr, &lir, &rir);
+			if (TypeEQ(lval, rval) == 0) {
+				symbolErrorMsg('7', p);
+				return retval;
+			}
+			return lval;
 	}
 	int i;
 	for (i = 0; i < p->arity; i++) {
