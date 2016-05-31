@@ -34,17 +34,22 @@ LABEL_COND  IF x [relop] y GOTO z
        ARG  ARG x
   CALLFUNC  x := CALL f
      PARAM  PARAM x
-  READREAD  x
+      READ  READ x
      WRITE  WRITE x
 */
 typedef struct InterCode {
-	enum { ASSIGN, ADD, SUB, MUL, DIV_, RETURN_, LABEL_CODE, LABEL_COND, LABEL_GOTO, READ, WRITE, CALLFUNC, FUNCTION, ARG, PARAM, REFASSIGN, DEC } kind;
+	enum { ASSIGN, ADD, SUB, MUL, DIV_, RETURN_, LABEL_CODE, LABEL_COND, LABEL_GOTO, READ, WRITE, CALL_FUNC, FUNCTION, ARG, PARAM, REFASSIGN, DEC } kind;
 	union {
 		struct { Operand left, right; } assign;
 		struct { Operand result, op1, op2; } binop;
 		Operand label_code;
 		Operand label_goto;
 		struct { Operand left, right, dest; char op[4]; } label_cond;
+		struct  { Operand dest; char func[MAX_LEN]; } call_func;
+		Operand arg;
+		Operand read;
+		Operand write;
+		Operand return_;
 	};
 } InterCode;
 

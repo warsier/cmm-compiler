@@ -154,6 +154,22 @@ void printInterCode(FILE *fp)
 			printOperand(&p->code.label_cond.dest, resulttemp);
 			fprintf(fp, "IF %s %s %s GOTO %s\n", ltemp, &p->code.label_cond.op[0], rtemp, resulttemp);
 			break;
+		case CALL_FUNC:
+			printOperand(&p->code.call_func.dest, resulttemp);
+			fprintf(fp, "%s := CALL %s\n", resulttemp,  &p->code.call_func.func[0]);
+			break;
+		case ARG:
+			printOperand(&p->code.arg, resulttemp);
+			fprintf(fp, "ARG %s\n", resulttemp);
+			break;
+		case READ:
+			printOperand(&p->code.read, resulttemp);
+			fprintf(fp, "READ %s\n", resulttemp);
+			break;
+		case WRITE:
+			printOperand(&p->code.write, resulttemp);
+			fprintf(fp, "WRITE %s\n", resulttemp);
+			break;
 		default:
 			assert(0);
 		}

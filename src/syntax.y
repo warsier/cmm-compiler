@@ -6,7 +6,6 @@
 	#include "common.h"
 	#define YYSTYPE TreeNode* // attribute of all symbols are defined as a pointer towards TreeNode
 	
-	extern bool errorStat;
 	extern int yylineno;
 	
 	TreeNode *procTreeNode(TreeNode *p, char *symbol)

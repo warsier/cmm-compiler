@@ -70,6 +70,7 @@ void procStructDef(TreeNode *p);
 Type procSpecifier(TreeNode *p);
 void procVarDec(Type nodetype, TreeNode *p);
 void procStructVarDec(Type nodetype, TreeNode *p);
+void procStmt(TreeNode *p, InterCodeNode *retIr);
 Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr);
 void buildSymbolTable(TreeNode *p);
 void procSymbolTable(TreeNode *p);

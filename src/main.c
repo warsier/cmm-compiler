@@ -1,5 +1,7 @@
 #include "common.h"
 
+bool errorStat;
+
 extern FILE *yyin;
 void yyrestart(FILE *);
 void yyparse();
@@ -10,6 +12,9 @@ int main(int argc, char** argv) {
 		perror(argv[1]);
 		return 1;
 	}
+	
+	errorStat = false;
+	
 	yyrestart(f);
 	yyparse();
 	
@@ -18,8 +23,8 @@ int main(int argc, char** argv) {
 		perror(argv[2]);
 		return 1;
 	}
-	
-	printInterCode(ir);
+	if (errorStat == false)
+		printInterCode(ir);
 	deleteInterCode();
 	
 	fclose(f);

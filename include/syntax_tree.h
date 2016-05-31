@@ -2,7 +2,6 @@
 #define __SYNTAX_TREE_H__
 
 #define MAX_CHILDREN 10 // the number of children in c-- syntax will not exceed MAX_CHILDREN
-#define MAX_LEN 30 // the length of symbol and name shall not exceed MAX_LEN
 
 #define INDENT 2 // control the output indent of the syntax tree
 #define ALWAYS_OUTPUT_TREE 1 // used to enable syntax tree output in testing, default value is 0

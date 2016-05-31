@@ -8,6 +8,7 @@ SymbolNode *StructTableHead = NULL;
 
 void symbolErrorMsg(char ErrorType, TreeNode *p)
 {
+	errorStat = true;
 	switch(ErrorType) {
 	case '1': printf("Error type 1 at line %d: Undefined variable \"%s\".\n", p->lineno, p->text); break;
 	case '2': printf("Error type 2 at line %d: Undefined function \"%s\".\n", p->lineno, p->text); break;
@@ -146,7 +147,7 @@ SymbolNode *pushinSymbol(const char *name)
 		stackslot = newnode;
 	}
 	
-	// remember that we did not modify the original pointer
+	// remember that we are not modifying the original pointer, so we have to do: 
 	HashTable[hashSymbol(name)] = hashslot;
 	SymbolStackHead->SymbolHead = stackslot;
 	
@@ -532,18 +533,75 @@ void procStructVarDec(Type nodetype, TreeNode *p)
 //       | IF LP Exp RP Stmt
 //       | IF LP Exp RP Stmt ELSE Stmt
 //       | WHILE LP Exp RP Stmt
-void procStmt(TreeNode *p)
+void procStmt(TreeNode *p, InterCodeNode *retIr)
 {
-	if (STREQ(p->children[0]->symbol, "RETURN")) {
+	if (p->arity == 2) {
+		procExp(p->children[0], NULLOP, retIr);
+	}
+	else if (p->arity == 1) {
+		int i;
+		for (i = 0; i < p->arity; i++)
+			buildSymbolTable(p->children[i]);
+	}
+	else if (p->arity == 3) {
 		SymbolStackNode *funcfield = SymbolStackHead;
+		Operand optemp = generateTemp();
 		while (funcfield != NULL && funcfield->funcptr == NULL) 
 			funcfield = funcfield->next;
-		if (funcfield != NULL && TypeEQ(funcfield->funcptr->FuncMsg.RetValType, procExp(p->children[1], NULLOP, NULL)) == 0)
+		if (funcfield != NULL && TypeEQ(funcfield->funcptr->FuncMsg.RetValType, procExp(p->children[1], optemp, retIr)) == 0)
 			symbolErrorMsg('8', p);
+		InterCode irtemp;
+		irtemp.kind = RETURN_, irtemp.return_ = optemp;
+		InterCodeAppend(retIr, irtemp);
 	}
-	int i;
-	for (i = 0; i < p->arity; i++)
-		buildSymbolTable(p->children[i]);
+	else if (p->arity == 5 && STREQ(p->children[0]->symbol, "IF")) {
+		Operand labeltemp1 = generateLabel(), labeltemp2 = generateLabel();
+		InterCodeNode code1, code2;
+		INITICN(code1); INITICN(code2);
+		procCond(p->children[2], labeltemp1, labeltemp2, &code1);
+		procStmt(p->children[4], &code2);
+		InterCode irtemp;
+		irtemp.kind = LABEL_CODE, irtemp.label_code = labeltemp1;
+		InterCodeAppend(&code1, irtemp);
+		irtemp.label_code = labeltemp2;
+		InterCodeAppend(&code2, irtemp);
+		InterCodeCat(3, retIr, &code1, &code2);
+	}
+	else if (p->arity == 7) {
+		Operand labeltemp1 = generateLabel(), labeltemp2 = generateLabel(), labeltemp3 = generateLabel();
+		InterCodeNode code1, code2, code3;
+		INITICN(code1); INITICN(code2); INITICN(code3);
+		procCond(p->children[2], labeltemp1, labeltemp2, &code1);
+		procStmt(p->children[4], &code2);
+		procStmt(p->children[6], &code3);
+		InterCode irtemp;
+		irtemp.kind = LABEL_CODE, irtemp.label_code = labeltemp1;
+		InterCodeAppend(&code1, irtemp);
+		irtemp.kind = LABEL_GOTO, irtemp.label_goto = labeltemp3;
+		InterCodeAppend(&code2, irtemp);
+		irtemp.kind = LABEL_CODE, irtemp.label_code = labeltemp2;
+		InterCodeAppend(&code2, irtemp);
+		irtemp.label_code = labeltemp3;
+		InterCodeAppend(&code3, irtemp);
+		InterCodeCat(4, retIr, &code1, &code2, &code3);
+	}
+	else {
+		Operand labeltemp1 = generateLabel(), labeltemp2 = generateLabel(), labeltemp3 = generateLabel();
+		InterCodeNode code1, code2;
+		INITICN(code1); INITICN(code2);
+		procCond(p->children[2], labeltemp2, labeltemp3, &code1);
+		procStmt(p->children[4], &code2);
+		InterCode irtemp;
+		irtemp.kind = LABEL_CODE, irtemp.label_code = labeltemp1;
+		InterCodeAppend(retIr, irtemp);
+		irtemp.label_code = labeltemp2;
+		InterCodeAppend(&code1, irtemp);
+		irtemp.kind = LABEL_GOTO, irtemp.label_goto = labeltemp1;
+		InterCodeAppend(&code2, irtemp);
+		irtemp.kind = LABEL_CODE, irtemp.label_code = labeltemp3;
+		InterCodeAppend(&code2, irtemp);
+		InterCodeCat(3, retIr, &code1, &code2);
+	}
 }
 
 Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
@@ -649,7 +707,31 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		else if (symboltemp->isfunc == false)
 			symbolErrorMsg('b', p->children[0]);
 		else if (STREQ(p->children[2]->symbol, "RP")) {
-			assert(0);
+			if (symboltemp->FuncMsg.ArgNum > 0) {
+				symbolErrorMsg('9', p);
+				printf("Function \"%s(", symboltemp->text);
+				int i;
+				char str[40];
+				for (i = 0; i < symboltemp->FuncMsg.ArgNum - 1; i++) {
+					printType(symboltemp->FuncMsg.ArgType[i], str);
+					printf("%s, ", str);
+				}
+				printType(symboltemp->FuncMsg.ArgType[i], str);
+				printf("%s", str);
+				printf(")\" is not applicable for arguments \"().\n");
+				return retval;
+			}
+			if (STREQ(p->children[0]->text, "read")) {
+				InterCode irtemp;
+				irtemp.kind = READ, irtemp.read = place;
+				InterCodeAppend(retIr, irtemp);
+			}
+			else {
+				InterCode irtemp;
+				irtemp.kind = CALL_FUNC, irtemp.call_func.dest = place;
+				strcpy(irtemp.call_func.func, p->children[0]->text);
+				InterCodeAppend(retIr, irtemp);
+			}
 		}
 		else {
 			int cnt = 1;
@@ -659,14 +741,19 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 				argstemp = argstemp->children[2];
 			}
 			Type *call = (Type *) malloc(sizeof(Type) * cnt);
+			Operand *arg_list = (Operand *) malloc(sizeof(Operand) * cnt);
+			InterCodeNode icntemp;
+			INITICN(icntemp);
 			cnt = 0;
 			argstemp = p->children[2];
 			while (argstemp->arity > 1) {
-				call[cnt] = procExp(argstemp->children[0], NULLOP, NULL);
+				arg_list[cnt] = generateTemp();
+				call[cnt] = procExp(argstemp->children[0], arg_list[cnt], &icntemp);
 				cnt++;
 				argstemp = argstemp->children[2];
 			}
-			call[cnt] = procExp(argstemp->children[0], NULLOP, NULL);
+			arg_list[cnt] = generateTemp();
+			call[cnt] = procExp(argstemp->children[0], arg_list[cnt], &icntemp);
 			cnt++;
 			bool flag = true;
 			if (cnt != symboltemp->FuncMsg.ArgNum)
@@ -697,8 +784,30 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 				}
 				printType(call[i], str);
 				printf("%s)\".\n", str);
+				return retval;
 			}
+			
+			if (STREQ(p->children[0]->text, "write")) {
+				InterCode irtemp;
+				irtemp.kind = WRITE, irtemp.write = arg_list[0];
+				InterCodeAppend(&icntemp, irtemp);
+				InterCodeCat(2, retIr, &icntemp);
+			}
+			else {
+				int i;
+				InterCode irtemp;
+				for (i = 0; i < cnt; i++) {
+					irtemp.kind = ARG, irtemp.arg = arg_list[i];
+					InterCodeAppend(&icntemp, irtemp);
+				}
+				irtemp.kind = CALL_FUNC, irtemp.call_func.dest = place;
+				strcpy(irtemp.call_func.func, p->children[0]->text);
+				InterCodeAppend(&icntemp, irtemp);
+				InterCodeCat(2, retIr, &icntemp);
+			}
+			
 			free(call);
+			free(arg_list);
 		}
 		return retval;
 	}
@@ -846,7 +955,7 @@ void buildSymbolTable(TreeNode *p)
 	}
 	if (STREQ(p->symbol, "Stmt")) {
 		// if it is a local variable definition
-		procStmt(p);
+		procStmt(p, &InterCodeHead);
 		return;
 	}
 	if (STREQ(p->symbol, "Exp")) {
@@ -874,6 +983,20 @@ void procSymbolTable(TreeNode *p)
 	SymbolStackHead->funcptr = NULL;
 	SymbolStackHead->next = NULL;
 	SymbolStackHead->SymbolHead = NULL;
+	
+	// push in function "read" and "write"
+	Type typetemp;
+	typetemp.kind = BASIC, typetemp.basic = B_INT;
+	SymbolNode *newnode = pushinSymbol("read");
+	strcpy(newnode->text, "read");
+	newnode->isfunc = true, newnode->isdef = true;
+	newnode->FuncMsg.RetValType = typetemp, newnode->FuncMsg.ArgNum = 0, newnode->FuncMsg.ArgType = NULL;
+	newnode = pushinSymbol("write");
+	strcpy(newnode->text, "write");
+	newnode->isfunc = true, newnode->isdef = true;
+	newnode->FuncMsg.RetValType = typetemp, newnode->FuncMsg.ArgNum = 1, newnode->FuncMsg.ArgType = (Type *) malloc(sizeof(Type));
+	newnode->FuncMsg.ArgType[0] = typetemp;
+	
 	initIR();
 	buildSymbolTable(p);
 	clearSymbolStack();
