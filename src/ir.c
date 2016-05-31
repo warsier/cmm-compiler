@@ -5,13 +5,13 @@
 const struct Operand NULLOP;
 
 InterCodeNode InterCodeHead;
-int InterCodeVarCnt, InterCodeTempCnt;
+int InterCodeVarCnt, InterCodeTempCnt, InterCodeLabelCnt;
 
 void initIR()
 {
 	InterCodeHead.next = &InterCodeHead;
 	InterCodeHead.prev = &InterCodeHead;
-	InterCodeVarCnt = 0, InterCodeTempCnt = 0;
+	InterCodeVarCnt = 0, InterCodeTempCnt = 0, InterCodeLabelCnt = 0;
 }
 
 Operand generateTemp()
@@ -20,6 +20,15 @@ Operand generateTemp()
 	result.kind = TEMP;
 	result.var_no = InterCodeTempCnt;
 	InterCodeTempCnt++;
+	return result;
+}
+
+Operand generateLabel()
+{
+	Operand result;
+	result.kind = LABEL;
+	result.var_no = InterCodeLabelCnt;
+	InterCodeLabelCnt++;
 	return result;
 }
 	
@@ -82,6 +91,9 @@ void printOperand(Operand *op, char *str)
 	case TEMP:
 		sprintf(str, "t%d", op->var_no);
 		break;
+	case LABEL:
+		sprintf(str, "label%d", op->var_no);
+		break;
 	case CONSTANT:
 		sprintf(str, "#%d", op->value);
 		break;
@@ -127,6 +139,20 @@ void printInterCode(FILE *fp)
 			printOperand(&p->code.binop.op1, ltemp);
 			printOperand(&p->code.binop.op2, rtemp);
 			fprintf(fp, "%s := %s / %s\n", resulttemp, ltemp, rtemp);
+			break;
+		case LABEL_CODE:
+			printOperand(&p->code.label_code, resulttemp);
+			fprintf(fp, "LABEL %s :\n", resulttemp);
+			break;
+		case LABEL_GOTO:
+			printOperand(&p->code.label_goto, resulttemp);
+			fprintf(fp, "GOTO %s\n", resulttemp);
+			break;
+		case LABEL_COND:
+			printOperand(&p->code.label_cond.left, ltemp);
+			printOperand(&p->code.label_cond.right, rtemp);
+			printOperand(&p->code.label_cond.dest, resulttemp);
+			fprintf(fp, "IF %s %s %s GOTO %s\n", ltemp, &p->code.label_cond.op[0], rtemp, resulttemp);
 			break;
 		default:
 			assert(0);

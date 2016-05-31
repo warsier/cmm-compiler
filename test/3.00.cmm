@@ -1,5 +1,11 @@
 int main ()
 {
-	int a;
-	a = 2 / 1;
+	int a, b;
+	a = 500;
+	if (a >= 300) {
+		b = 400;
+	}
+	else {
+		b = 200;
+	}
 }

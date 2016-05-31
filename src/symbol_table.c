@@ -240,6 +240,72 @@ int TypeEQ(Type lval, Type rval)
 	return 1;
 }
 
+Type procCond(TreeNode *p, Operand label_true, Operand label_false, InterCodeNode *retIr)
+{
+	if (STREQ(p->children[0]->symbol, "NOT")) {
+		procCond(p->children[1], label_false, label_true, retIr);
+	}
+	else if (STREQ(p->children[1]->symbol, "RELOP")) {
+		Operand optemp1 = generateTemp(), optemp2 = generateTemp();
+		InterCodeNode lir, rir;
+		INITICN(lir); INITICN(rir);
+		procExp(p->children[0], optemp1, &lir);
+		procExp(p->children[2], optemp2, &rir);
+		InterCode irtemp;
+		irtemp.kind = LABEL_COND;
+		irtemp.label_cond.left = optemp1, irtemp.label_cond.right = optemp2, irtemp.label_cond.dest = label_true;
+		strcpy(irtemp.label_cond.op, p->children[1]->text);
+		InterCodeAppend(&rir, irtemp);
+		irtemp.kind = LABEL_GOTO;
+		irtemp.label_goto = label_false;
+		InterCodeAppend(&rir, irtemp);
+		InterCodeCat(3, retIr, &lir, &rir);
+	}
+	else if (STREQ(p->children[1]->symbol, "AND")) {
+		Operand labeltemp = generateLabel();
+		InterCodeNode lir, rir;
+		INITICN(lir); INITICN(rir);
+		procCond(p->children[0], labeltemp, label_false, &lir);
+		procCond(p->children[2], label_true, label_false, &rir);
+		InterCode irtemp;
+		irtemp.kind = LABEL_CODE;
+		irtemp.label_code = labeltemp;
+		InterCodeAppend(&lir, irtemp);
+		InterCodeCat(3, retIr, &lir, &rir);
+	}
+	else if (STREQ(p->children[1]->symbol, "OR")) {
+		Operand labeltemp = generateLabel();
+		InterCodeNode lir, rir;
+		INITICN(lir); INITICN(rir);
+		procCond(p->children[0], label_true, labeltemp, &lir);
+		procCond(p->children[2], label_true, label_false, &rir);
+		InterCode irtemp;
+		irtemp.kind = LABEL_CODE;
+		irtemp.label_code = labeltemp;
+		InterCodeAppend(&lir, irtemp);
+		InterCodeCat(3, retIr, &lir, &rir);
+	}
+	else {
+		Operand optemp = generateTemp();
+		InterCodeNode icntemp;
+		INITICN(icntemp);
+		procExp(p, optemp, &icntemp);
+		InterCode irtemp;
+		irtemp.kind = LABEL_COND;
+		irtemp.label_cond.left = optemp, irtemp.label_cond.right.kind = CONSTANT, irtemp.label_cond.right.value = 0, irtemp.label_cond.dest = label_true;
+		strcpy(irtemp.label_cond.op, "!=");
+		InterCodeAppend(&icntemp, irtemp);
+		irtemp.kind = LABEL_GOTO;
+		irtemp.label_goto = label_false;
+		InterCodeAppend(&icntemp, irtemp);
+		InterCodeCat(2, retIr, &icntemp);
+	}
+	
+	Type retval;
+	retval.kind = BASIC, retval.basic = B_INT;
+	return retval;
+}
+
 // ExtDef -> Specifier ExtDecList SEMI (global variable definition)
 //         | Specifier SEMI            (global structure definition)
 //         | Specifier FunDec CompSt   (function definition)
@@ -582,6 +648,9 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 			symbolErrorMsg('2', p->children[0]);
 		else if (symboltemp->isfunc == false)
 			symbolErrorMsg('b', p->children[0]);
+		else if (STREQ(p->children[2]->symbol, "RP")) {
+			assert(0);
+		}
 		else {
 			int cnt = 1;
 			TreeNode *argstemp = p->children[2];
@@ -634,6 +703,45 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		return retval;
 	}
 	
+	// two elements
+	if (STREQ(p->children[0]->symbol, "MINUS")) {
+		InterCode irtemp;
+		irtemp.kind = SUB;
+		irtemp.binop.result = place;
+		irtemp.binop.op1.kind = CONSTANT, irtemp.binop.op1.value = 0;
+		irtemp.binop.op2 = generateTemp();
+		InterCodeNode rir;
+		INITICN(rir);
+		Type rval = procExp(p->children[1], irtemp.binop.op2, &rir);
+		InterCodeAppend(&rir, irtemp);
+		InterCodeCat(2, retIr, &rir);
+		return rval;
+	}
+	
+	if (STREQ(p->children[0]->symbol, "NOT")) {
+		Operand labeltemp1 = generateLabel(), labeltemp2 = generateLabel();
+			InterCode irtemp;
+			irtemp.kind = ASSIGN;
+			irtemp.assign.left = place;
+			irtemp.assign.right.kind = CONSTANT, irtemp.assign.right.value = 0;
+			InterCodeAppend(retIr, irtemp);
+			InterCodeNode icntemp;
+			INITICN(icntemp);
+			Type vartemp = procCond(p, labeltemp1, labeltemp2, &icntemp);
+			irtemp.kind = LABEL_CODE;
+			irtemp.label_code = labeltemp1;
+			InterCodeAppend(&icntemp, irtemp);
+			irtemp.kind = ASSIGN;
+			irtemp.assign.left = place;
+			irtemp.assign.right.kind = CONSTANT, irtemp.assign.right.value = 1;
+			InterCodeAppend(&icntemp, irtemp);
+			irtemp.kind = LABEL_CODE;
+			irtemp.label_code = labeltemp2;
+			InterCodeAppend(&icntemp, irtemp);
+			InterCodeCat(2, retIr, &icntemp);
+			return vartemp;
+	}
+	
 	// three elements
 	if (p->arity == 3 && STREQ(p->children[0]->symbol, "LP")) { // brackets
 		return procExp(p->children[1], place, retIr);
@@ -655,8 +763,7 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		irtemp.assign.left = generateVar(symboltemp);
 		irtemp.assign.right = generateTemp();
 		InterCodeNode lir, rir;
-		lir.next = &lir, lir.prev = &lir;
-		rir.next = &rir, rir.prev = &rir;
+		INITICN(lir); INITICN(rir);
 		Type lval = procExp(p->children[0], place, &lir), rval = procExp(p->children[2], irtemp.assign.right, &rir);
 		InterCodeAppend(&rir, irtemp);
 		InterCodeCat(3, retIr, &rir, &lir);
@@ -667,31 +774,55 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		return lval;
 	}
 	if (p->arity == 3 && !STREQ(p->children[1]->symbol, "Exp") && !STREQ(p->children[1]->symbol, "DOT")) {
-		InterCodeNode lir, rir;
-		lir.next = &lir, lir.prev = &lir;
-		rir.next = &rir, rir.prev = &rir;
-		Operand optemp1 = generateTemp(), optemp2 = generateTemp();
-		Type lval = procExp(p->children[0], optemp1, &lir), rval = procExp(p->children[2], optemp2, &rir);	
-		InterCode ictemp;
-		if (STREQ(p->children[1]->symbol, "PLUS")) {
-			ictemp.kind = ADD, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
-		}
-		if (STREQ(p->children[1]->symbol, "MINUS")) {
-			ictemp.kind = SUB, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
-		}
-		if (STREQ(p->children[1]->symbol, "STAR")) {
-			ictemp.kind = MUL, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
-		}
-		if (STREQ(p->children[1]->symbol, "DIV")) {
-			ictemp.kind = DIV_, ictemp.binop.result = place, ictemp.binop.op1 = optemp1, ictemp.binop.op2 = optemp2;
-		}
-		InterCodeAppend(&rir, ictemp);
-			InterCodeCat(3, retIr, &lir, &rir);
-			if (TypeEQ(lval, rval) == 0) {
-				symbolErrorMsg('7', p);
-				return retval;
+		if (STREQ(p->children[1]->symbol, "PLUS") || STREQ(p->children[1]->symbol, "MINUS") || STREQ(p->children[1]->symbol, "STAR") || STREQ(p->children[1]->symbol, "DIV")) {
+			InterCodeNode lir, rir;
+			INITICN(lir); INITICN(rir);
+			Operand optemp1 = generateTemp(), optemp2 = generateTemp();
+			Type lval = procExp(p->children[0], optemp1, &lir), rval = procExp(p->children[2], optemp2, &rir);	
+			InterCode irtemp;
+			if (STREQ(p->children[1]->symbol, "PLUS")) {
+				irtemp.kind = ADD, irtemp.binop.result = place, irtemp.binop.op1 = optemp1, irtemp.binop.op2 = optemp2;
 			}
-			return lval;
+			if (STREQ(p->children[1]->symbol, "MINUS")) {
+				irtemp.kind = SUB, irtemp.binop.result = place, irtemp.binop.op1 = optemp1, irtemp.binop.op2 = optemp2;
+			}
+			if (STREQ(p->children[1]->symbol, "STAR")) {
+				irtemp.kind = MUL, irtemp.binop.result = place, irtemp.binop.op1 = optemp1, irtemp.binop.op2 = optemp2;
+			}
+			if (STREQ(p->children[1]->symbol, "DIV")) {
+				irtemp.kind = DIV_, irtemp.binop.result = place, irtemp.binop.op1 = optemp1, irtemp.binop.op2 = optemp2;
+			}
+			InterCodeAppend(&rir, irtemp);
+				InterCodeCat(3, retIr, &lir, &rir);
+				if (TypeEQ(lval, rval) == 0) {
+					symbolErrorMsg('7', p);
+					return retval;
+				}
+				return lval;
+		}
+		else {
+			Operand labeltemp1 = generateLabel(), labeltemp2 = generateLabel();
+			InterCode irtemp;
+			irtemp.kind = ASSIGN;
+			irtemp.assign.left = place;
+			irtemp.assign.right.kind = CONSTANT, irtemp.assign.right.value = 0;
+			InterCodeAppend(retIr, irtemp);
+			InterCodeNode icntemp;
+			INITICN(icntemp);
+			Type vartemp = procCond(p, labeltemp1, labeltemp2, &icntemp);
+			irtemp.kind = LABEL_CODE;
+			irtemp.label_code = labeltemp1;
+			InterCodeAppend(&icntemp, irtemp);
+			irtemp.kind = ASSIGN;
+			irtemp.assign.left = place;
+			irtemp.assign.right.kind = CONSTANT, irtemp.assign.right.value = 1;
+			InterCodeAppend(&icntemp, irtemp);
+			irtemp.kind = LABEL_CODE;
+			irtemp.label_code = labeltemp2;
+			InterCodeAppend(&icntemp, irtemp);
+			InterCodeCat(2, retIr, &icntemp);
+			return vartemp;
+		}
 	}
 	int i;
 	for (i = 0; i < p->arity; i++) {

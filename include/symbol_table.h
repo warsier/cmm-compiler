@@ -62,6 +62,7 @@ FieldList *pushinStructField(const char *name);
 void clearSymbolStack();
 void clearStructTable();
 int TypeEQ(Type lval, Type rval);
+Type procCond(TreeNode *p, Operand label_true, Operand label_false, InterCodeNode *retIr);
 void procExtDef(TreeNode *p);
 void procFunDec(Type nodetype, TreeNode *p);
 void procDef(TreeNode *p);
