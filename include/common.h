@@ -14,7 +14,7 @@ typedef unsigned bool;
 
 #define STREQ(x, y) (strcmp((x), (y)) == 0)
 
-#define MAX_LEN 30 // the length of symbol and name shall not exceed MAX_LEN
+#define MAX_LEN 32 // the length of symbol and name shall not exceed MAX_LEN
 
 extern bool errorStat;
 

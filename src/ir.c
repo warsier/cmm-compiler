@@ -109,7 +109,7 @@ void printInterCode(FILE *fp)
 {	
 	InterCodeNode *p = InterCodeHead.next;
 	char resulttemp[MAX_LEN], ltemp[MAX_LEN], rtemp[MAX_LEN];
-	while (p->next != &InterCodeHead) {
+	while (p != &InterCodeHead) {
 		switch(p->code.kind) {
 		case ASSIGN:
 			printOperand(&p->code.assign.left, ltemp);
@@ -169,6 +169,13 @@ void printInterCode(FILE *fp)
 		case WRITE:
 			printOperand(&p->code.write, resulttemp);
 			fprintf(fp, "WRITE %s\n", resulttemp);
+			break;
+		case RETURN_:
+			printOperand(&p->code.return_, resulttemp);
+			fprintf(fp, "RETURN %s\n", resulttemp);
+			break;
+		case FUNCTION:
+			fprintf(fp, "FUNCTION %s :\n", &p->code.function[0]);
 			break;
 		default:
 			assert(0);

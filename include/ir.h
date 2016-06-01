@@ -50,6 +50,7 @@ typedef struct InterCode {
 		Operand read;
 		Operand write;
 		Operand return_;
+		char function[MAX_LEN];
 	};
 } InterCode;
 

@@ -69,6 +69,8 @@ Operand generateVar(SymbolNode *p)
 {
 	Operand result;
 	result.kind = VARIABLE;
+	if (errorStat == true)
+		return result;
 	if (p->irno == -1) {
 		p->irno = InterCodeVarCnt;
 		InterCodeVarCnt++;
@@ -360,6 +362,12 @@ void procFunDec(Type nodetype, TreeNode *p)
 	pushSymbolStack();
 	SymbolStackHead->funcptr = newnode;
 	
+	/* irpart */
+	InterCode irtemp;
+	irtemp.kind = FUNCTION;
+	strcpy(irtemp.function, p->children[0]->text);
+	InterCodeAppend(&InterCodeHead, irtemp);
+	
 	if (p->arity == 4) {
 		int cnt = 1;
 		TreeNode *temp = p->children[2];
@@ -382,6 +390,7 @@ void procFunDec(Type nodetype, TreeNode *p)
 		procVarDec(newnodetype, temp->children[0]->children[1]);
 		newnode->FuncMsg.ArgType[cnt] = newnodetype;
 		cnt++;
+		
 	}
 	else if (p->arity == 3) {
 		newnode->FuncMsg.ArgNum = 0;
@@ -640,7 +649,6 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 			retval.kind = BASIC;
 			retval.basic = B_FLOAT;
 		}
-		
 		return retval;
 	}
 	
@@ -732,6 +740,7 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 				strcpy(irtemp.call_func.func, p->children[0]->text);
 				InterCodeAppend(retIr, irtemp);
 			}
+			retval = symboltemp->FuncMsg.RetValType;
 		}
 		else {
 			int cnt = 1;
@@ -760,11 +769,12 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 				flag = false;
 			else {
 				int i;
-				for (i = 0; i < cnt; i++)
-					if (TypeEQ(call[cnt], symboltemp->FuncMsg.ArgType[cnt]) == 0) {
+				for (i = 0; i < cnt; i++) {
+					if (TypeEQ(call[i], symboltemp->FuncMsg.ArgType[i]) == 0) {
 						flag = false;
 						break;
 					}
+				}
 			}
 			if (!flag) {
 				symbolErrorMsg('9', p);
@@ -777,13 +787,13 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 				}
 				printType(symboltemp->FuncMsg.ArgType[i], str);
 				printf("%s", str);
-				printf(")\" is not applicable for arguments \"(");
+				printf(")\" is not applicable for arguments \"");
 				for (i = 0; i < cnt - 1; i++) {
 					printType(call[i], str);
 					printf("%s, ", str);
 				}
 				printType(call[i], str);
-				printf("%s)\".\n", str);
+				printf("%s\".\n", str);
 				return retval;
 			}
 			
@@ -808,6 +818,8 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 			
 			free(call);
 			free(arg_list);
+			
+			retval = symboltemp->FuncMsg.RetValType;
 		}
 		return retval;
 	}
@@ -869,11 +881,11 @@ Type procExp(TreeNode *p, Operand place, InterCodeNode *retIr)
 		SymbolNode *symboltemp = searchSymbol(p->children[0]->children[0]->text);
 		InterCode irtemp;
 		irtemp.kind = ASSIGN;
-		irtemp.assign.left = generateVar(symboltemp);
 		irtemp.assign.right = generateTemp();
 		InterCodeNode lir, rir;
 		INITICN(lir); INITICN(rir);
 		Type lval = procExp(p->children[0], place, &lir), rval = procExp(p->children[2], irtemp.assign.right, &rir);
+		irtemp.assign.left = generateVar(symboltemp);
 		InterCodeAppend(&rir, irtemp);
 		InterCodeCat(3, retIr, &rir, &lir);
 		if (TypeEQ(lval, rval) == 0) {
