@@ -179,7 +179,7 @@ void printInterCode(FILE *fp)
 			break;
 		case PARAM:
 			printOperand(&p->code.param, resulttemp);
-			fprintf(fp, "PARAM %s :\n", resulttemp);
+			fprintf(fp, "PARAM %s \n", resulttemp);
 			break;
 		default:
 			assert(0);
