@@ -383,12 +383,20 @@ void procFunDec(Type nodetype, TreeNode *p)
 			Type newnodetype = procSpecifier(temp->children[0]->children[0]);
 			procVarDec(newnodetype, temp->children[0]->children[1]);
 			newnode->FuncMsg.ArgType[cnt] = newnodetype;
+			irtemp.kind = PARAM;
+			symboltemp = searchSymbol(temp->children[0]->children[1]->children[0]->text);
+			irtemp.param = generateVar(symboltemp);
+			InterCodeAppend(&InterCodeHead, irtemp);
 			cnt++;
 			temp = temp->children[2];
 		}
 		Type newnodetype = procSpecifier(temp->children[0]->children[0]);
 		procVarDec(newnodetype, temp->children[0]->children[1]);
 		newnode->FuncMsg.ArgType[cnt] = newnodetype;
+		irtemp.kind = PARAM;
+		symboltemp = searchSymbol(temp->children[0]->children[1]->children[0]->text);
+		irtemp.param = generateVar(symboltemp);
+		InterCodeAppend(&InterCodeHead, irtemp);
 		cnt++;
 		
 	}

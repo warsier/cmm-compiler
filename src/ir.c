@@ -177,6 +177,10 @@ void printInterCode(FILE *fp)
 		case FUNCTION:
 			fprintf(fp, "FUNCTION %s :\n", &p->code.function[0]);
 			break;
+		case PARAM:
+			printOperand(&p->code.param, resulttemp);
+			fprintf(fp, "PARAM %s :\n", resulttemp);
+			break;
 		default:
 			assert(0);
 		}

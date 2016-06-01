@@ -1,11 +1,5 @@
-int main ()
+int func(int a, int b)
 {
-	int a, b;
-	a = 500;
-	if (a >= 300) {
-		b = 400;
-	}
-	else {
-		b = 200;
-	}
+	a = read();
+	b = read();
 }

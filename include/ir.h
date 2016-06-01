@@ -51,6 +51,7 @@ typedef struct InterCode {
 		Operand write;
 		Operand return_;
 		char function[MAX_LEN];
+		Operand param;
 	};
 } InterCode;
 
