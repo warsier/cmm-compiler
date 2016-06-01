@@ -9,9 +9,9 @@ Till now, this compiler has the function of:
 * Output the lexical and syntax errors for the files if they have some.
 * The lexical analysis part can also deal with comments without nests, octal and hexademical numbers, and scientific notation.
 * Some differences (mistakes?) in the implement of error output and error recovery.
-
 * The analysis of all compulsory semantic errors.
 * Implement of different scopes.
+* Generation of intercode.
 
 ## 1. Compilation and Usage
 For the convenience of presentation, I use ```$(DIR)``` to express the root directory of the folder in the following descriptions.
@@ -74,5 +74,6 @@ For this part, you can output the intercode of ```in.cmm```  to file ```out.ir``
 ```Bash
 ./parser in.cmm out.ir
 ```
+I use a linked-list structure to implement the intercode. The structure is characterized in ```$(DIR)/include/ir.h```. Operations to the linked-list is described in ```$(DIR)/src/ir.c```. However, the generation of each line of intercode is done in ```$(DIR)/src/symbol_table.c```.
 
-I use a linked-list structure to implement the intercode. The structure is characterized in ```$(DIR)/include/ir.h```. 
+Some bugs in semantic analysis are fixed.
